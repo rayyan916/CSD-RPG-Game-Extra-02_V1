@@ -121,8 +121,8 @@
                         <h1 class="serif-title font-black text-base sm:text-xl tracking-wide bg-gradient-to-r from-amber-200 via-rose-300 to-cyan-200 bg-clip-text text-transparent">
                             公民山海經：齊打異世界機械山海王
                         </h1>
-                        <span id="global-session-pill" class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
-                            <i class="fa-solid fa-signal mr-1"></i>戰場開放中
+                        <span id="global-session-pill" class="text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                            <i class="fa-solid fa-hourglass-half mr-1"></i>待機中 (等待控制版開始)
                         </span>
                     </div>
                     <p class="text-[11px] text-slate-400 hidden sm:block">《香江風雲錄》雙向共通 · 1～40人跨裝置實時共鬥 · 六大導學案480題庫</p>
@@ -182,7 +182,7 @@
                 </div>
                 <div class="space-y-3 text-left">
                     <label class="text-xs font-bold text-slate-300 block">控制版登入號碼：</label>
-                    <input id="controller-passcode-input" type="password" placeholder="請輸入登入號碼 (021011060906)"
+                    <input id="controller-passcode-input" type="password" placeholder="請輸入控制版專屬登入號碼"
                         class="w-full bg-slate-950 border border-slate-700 focus:border-rose-400 rounded-xl px-4 py-3 text-center font-mono text-base text-white tracking-widest focus:outline-none"
                         onkeydown="if(event.key==='Enter') verifyControllerLogin()">
                     <p id="controller-login-error" class="hidden text-xs text-rose-400 font-bold text-center">
@@ -194,7 +194,7 @@
                 </div>
             </div>
 
-            <!-- Controller Main Dashboard (Unlocked after 021011060906) -->
+            <!-- Controller Main Dashboard -->
             <div id="controller-dashboard" class="hidden space-y-5">
                 <!-- Top Control Bar -->
                 <div class="mecha-card rounded-2xl p-4 sm:p-6 border-2 border-rose-500/60">
@@ -214,13 +214,16 @@
                             </div>
                         </div>
 
-                        <!-- Start / End / Reset Buttons -->
+                        <!-- Start / End / Standby / Reset Buttons -->
                         <div class="flex flex-wrap items-center gap-2.5">
                             <button id="btn-ctrl-start" onclick="controllerStartGame()" class="btn-jade px-5 py-3 rounded-xl font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg">
                                 <i class="fa-solid fa-play"></i> 開始遊戲 (開放玩家進入)
                             </button>
                             <button id="btn-ctrl-end" onclick="controllerEndGame()" class="btn-cyber px-5 py-3 rounded-xl font-black text-xs sm:text-sm flex items-center gap-2 shadow-lg">
                                 <i class="fa-solid fa-stop"></i> 結束遊戲 (鎖定並結算排名榜)
+                            </button>
+                            <button onclick="controllerSetWaiting()" class="bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/50 px-3.5 py-3 rounded-xl font-bold text-xs flex items-center gap-1.5 transition">
+                                <i class="fa-solid fa-hourglass-half"></i> 設為未開始 (全體待機)
                             </button>
                             <button onclick="controllerResetRaid()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 px-3.5 py-3 rounded-xl font-bold text-xs flex items-center gap-1.5 transition">
                                 <i class="fa-solid fa-rotate-right"></i> 重置Boss血量與排名
@@ -243,19 +246,70 @@
                             <button id="btn-toggle-sim-bot" onclick="toggleSimBotAttack()" class="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-400/50 font-bold">啟動模擬自動作戰</button>
                         </div>
                     </div>
+
+                    <!-- NEW: Controller Real-time Boss Strength (2x/5x/10x/50x) & Shigong Training Manual Multiplier (2x/5x/7x) -->
+                    <div class="mt-4 pt-4 border-t border-slate-800 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        <!-- Control 1: Mecha Boss Strength Multiplier -->
+                        <div class="bg-slate-950/90 border border-rose-500/40 rounded-xl p-3.5">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <span class="text-xs font-black text-rose-300">
+                                    <i class="fa-solid fa-robot mr-1"></i>控制「齊打異世界機械山海王」強度（三階段戰鬥能力倍數）
+                                </span>
+                                <span id="ctrl-boss-mult-badge" class="text-[11px] font-mono font-black px-2 py-0.5 rounded bg-rose-500/20 text-rose-200 border border-rose-400/40">
+                                    目前：原版 1 倍
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mb-2.5">同步提升機械山海王三個階段的 HP、攻擊力、防禦力及必殺技威力：</p>
+                            <div class="grid grid-cols-5 gap-1.5 text-xs">
+                                <button id="btn-bmult-1" onclick="controllerSetBossPower(1)" class="py-2 rounded-lg font-black border transition bg-rose-600 text-white border-rose-300 shadow">原版1倍</button>
+                                <button id="btn-bmult-2" onclick="controllerSetBossPower(2)" class="py-2 rounded-lg font-black border transition bg-slate-900 text-slate-300 border-slate-700 hover:border-rose-400">提升2倍</button>
+                                <button id="btn-bmult-5" onclick="controllerSetBossPower(5)" class="py-2 rounded-lg font-black border transition bg-slate-900 text-slate-300 border-slate-700 hover:border-rose-400">提升5倍</button>
+                                <button id="btn-bmult-10" onclick="controllerSetBossPower(10)" class="py-2 rounded-lg font-black border transition bg-slate-900 text-slate-300 border-slate-700 hover:border-rose-400">提升10倍</button>
+                                <button id="btn-bmult-50" onclick="controllerSetBossPower(50)" class="py-2 rounded-lg font-black border transition bg-slate-900 text-slate-300 border-slate-700 hover:border-rose-400">提升50倍</button>
+                            </div>
+                        </div>
+
+                        <!-- Control 2: Shigong Training Stat Manual Multiplier -->
+                        <div class="bg-slate-950/90 border border-emerald-500/40 rounded-xl p-3.5">
+                            <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                                <span class="text-xs font-black text-emerald-300">
+                                    <i class="fa-solid fa-user-graduate mr-1"></i>控制「與師公修行備戰」答對後戰鬥能力秘笈升幅
+                                </span>
+                                <span id="ctrl-shigong-mult-badge" class="text-[11px] font-mono font-black px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-200 border border-emerald-400/40">
+                                    目前：原版 2 倍
+                                </span>
+                            </div>
+                            <p class="text-[11px] text-slate-400 mb-2.5">提升生命值、內力值、閃避速度、攻擊力、防禦力、必殺技升幅（不包括吞噬奇禽異獸）：</p>
+                            <div class="grid grid-cols-3 gap-2 text-xs">
+                                <button id="btn-smult-2" onclick="controllerSetShigongMultiplier(2)" class="py-2 rounded-lg font-black border transition bg-emerald-600 text-white border-emerald-300 shadow">原版 2 倍升幅</button>
+                                <button id="btn-smult-5" onclick="controllerSetShigongMultiplier(5)" class="py-2 rounded-lg font-black border transition bg-slate-900 text-slate-300 border-slate-700 hover:border-emerald-400">原版 5 倍升幅</button>
+                                <button id="btn-smult-7" onclick="controllerSetShigongMultiplier(7)" class="py-2 rounded-lg font-black border transition bg-slate-900 text-slate-300 border-slate-700 hover:border-emerald-400">原版 7 倍升幅</button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Global Boss 3-Phase Status Card -->
                 <div class="wuxia-card rounded-2xl p-4 sm:p-6 border border-amber-500/50">
                     <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span id="ctrl-boss-phase-badge" class="text-xs font-black px-2.5 py-0.5 rounded bg-rose-600 text-white">第一狀態 · 正常模式</span>
-                                <span id="ctrl-boss-beasts-badge" class="text-xs font-bold px-2.5 py-0.5 rounded bg-purple-500/20 text-purple-200 border border-purple-400/40">全20種奇禽異獸（全部3階）</span>
+                        <div class="flex items-center gap-3.5">
+                            <div class="relative shrink-0 cursor-pointer group" onclick="previewCurrentPhaseBossArt()">
+                                <img id="ctrl-boss-img" src="https://i.postimg.cc/bwNVPm42/CSD-RPG-17a-yi-shi-jie-ji-xie-shan-hai-wang-di-yi-zhuang-tai-zheng-chang-mo-shi.png" referrerpolicy="no-referrer" alt="異世界機械山海王"
+                                    class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover border-2 border-rose-400 shadow-lg bg-slate-950 group-hover:scale-105 transition"
+                                    onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');">
+                                <div class="hidden w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-rose-500/20 text-rose-300 border-2 border-rose-400 items-center justify-center text-2xl">
+                                    <i class="fa-solid fa-robot"></i>
+                                </div>
                             </div>
-                            <h3 class="serif-title text-lg sm:text-2xl font-black text-white mt-1">
-                                異世界機械山海王 <span id="ctrl-boss-subtitle" class="text-sm font-normal text-amber-300">（每2回合施放「相柳·九首劇毒」）</span>
-                            </h3>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span id="ctrl-boss-phase-badge" class="text-xs font-black px-2.5 py-0.5 rounded bg-rose-600 text-white">第一狀態 · 正常模式</span>
+                                    <span id="ctrl-boss-beasts-badge" class="text-xs font-bold px-2.5 py-0.5 rounded bg-purple-500/20 text-purple-200 border border-purple-400/40">全20種奇禽異獸（全部3階）</span>
+                                </div>
+                                <h3 class="serif-title text-lg sm:text-2xl font-black text-white mt-1">
+                                    異世界機械山海王 <span id="ctrl-boss-subtitle" class="text-sm font-normal text-amber-300">（每2回合施放「相柳·九首劇毒」）</span>
+                                </h3>
+                            </div>
                         </div>
                         <div class="flex items-center gap-2 text-xs">
                             <span class="text-slate-400">快速切換階段測試：</span>
@@ -304,16 +358,24 @@
                     </div>
                 </div>
 
-                <!-- End-of-Game Final Leaderboard (Shown prominently when game is ended, or toggleable anytime) -->
-                <div id="ctrl-leaderboard-section" class="hidden wuxia-card rounded-2xl p-5 sm:p-6 border-2 border-amber-400 shadow-2xl">
-                    <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+                <!-- End-of-Game Final Leaderboard (Shown prominently when game is ended, and available anytime in Controller) -->
+                <div id="ctrl-leaderboard-section" class="wuxia-card rounded-2xl p-5 sm:p-6 border-2 border-amber-400 shadow-2xl">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
                         <div>
-                            <span class="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">Final Raid Damage Leaderboard</span>
+                            <span id="ctrl-lb-badge" class="text-xs font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">實時與結算總傷害排名榜</span>
                             <h3 class="serif-title text-xl sm:text-2xl font-black text-white mt-1">
-                                <i class="fa-solid fa-trophy text-amber-400 mr-2"></i>異世界機械山海王 · 玩家總傷害排名榜
+                                <i class="fa-solid fa-trophy text-amber-400 mr-2"></i>異世界機械山海王 · 玩家排名榜 (依傷害HP總數)
                             </h3>
+                            <p class="text-xs text-slate-300 mt-0.5">可隨時或於結束遊戲後一鍵下載完整排名資料報表 (.csv / .json)</p>
                         </div>
-                        <span class="text-xs text-slate-300">依對「異世界機械山海王」造成的 HP 傷害總數排序</span>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="downloadLeaderboardCSV()" class="btn-gold px-4 py-2.5 rounded-xl font-black text-xs flex items-center gap-1.5 shadow-lg">
+                                <i class="fa-solid fa-file-csv"></i> 下載排名資料 (Excel .csv)
+                            </button>
+                            <button onclick="downloadLeaderboardJSON()" class="bg-slate-800 hover:bg-slate-700 text-amber-200 border border-amber-500/40 px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition">
+                                <i class="fa-solid fa-file-code"></i> 下載排名資料 (.json)
+                            </button>
+                        </div>
                     </div>
                     <div id="ctrl-leaderboard-list" class="space-y-2 max-h-96 overflow-y-auto pr-1">
                         <!-- Dynamically populated leaderboard -->
@@ -340,41 +402,104 @@
         </section>
 
         <!-- =================================================================== -->
-        <!-- PLAYER GATE OVERLAY: WHEN CONTROLLER HAS ENDED OR PAUSED THE GAME   -->
+        <!-- PLAYER STANDBY & END-OF-GAME SUMMARY SCREEN                         -->
         <!-- =================================================================== -->
-        <section id="screen-player-locked" class="hidden my-auto py-6">
-            <div class="max-w-3xl mx-auto mecha-card rounded-2xl p-6 sm:p-8 border-2 border-rose-500/70 text-center space-y-5">
-                <div class="w-16 h-16 rounded-2xl bg-rose-500/20 border-2 border-rose-400 flex items-center justify-center mx-auto text-rose-300 text-3xl">
-                    <i id="locked-screen-icon" class="fa-solid fa-hourglass-end"></i>
+        <section id="screen-player-locked" class="my-auto py-6">
+            <div id="player-locked-card" class="max-w-4xl mx-auto mecha-card rounded-2xl p-6 sm:p-8 border-2 border-amber-500/70 text-center space-y-5">
+                <div id="locked-icon-wrap" class="w-16 h-16 rounded-2xl bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center mx-auto text-amber-300 text-3xl">
+                    <i id="locked-screen-icon" class="fa-solid fa-hourglass-half"></i>
                 </div>
                 <div>
-                    <span id="locked-screen-badge" class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40">
-                        限時遊戲已結束 · 等待控制版開啟
+                    <span id="locked-screen-badge" class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                        玩家待機畫面 · 等待「控制版」開始遊戲
                     </span>
                     <h2 id="locked-screen-title" class="serif-title text-2xl sm:text-3xl font-black text-white mt-2">
-                        控制版已結束本場限時討伐！
+                        「控制版」尚未開始遊戲 · 玩家待機中
                     </h2>
-                    <p id="locked-screen-desc" class="text-xs sm:text-sm text-slate-300 mt-1 max-w-xl mx-auto leading-relaxed">
-                        《公民山海經：齊打異世界機械山海王》為限時共鬥遊戲。當「控制版」結束遊戲後，玩家不能再次進入遊戲，直至老師在「控制版」再次開始遊戲。你仍可在下方檢視總傷害排名榜並匯出角色進度回《香江風雲錄》！
+                    <p id="locked-screen-desc" class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl mx-auto leading-relaxed">
+                        本遊戲由老師透過「控制版」控制開始及結束。在「控制版」按下「開始遊戲」前，所有「玩家版」只可在此待機畫面等候，不能進入「齊打異世界機械山海王」和「與師公修行備戰」。你可先在下方匯入《香江風雲錄》原版進度或輸入名字預備，當「控制版」開始遊戲後畫面將自動解鎖進入！
                     </p>
                 </div>
 
-                <!-- Live Leaderboard inside Player Locked Screen -->
-                <div class="bg-slate-950/90 rounded-2xl p-4 sm:p-5 border border-amber-500/40 text-left">
-                    <div class="flex items-center justify-between mb-3">
+                <!-- Connection / Room Sync Bar inside Standby Screen (Auto-reconnects every 3s + HTTPS Cloud Relay) -->
+                <div class="max-w-2xl mx-auto p-3.5 rounded-xl bg-slate-950/90 border border-cyan-500/40 space-y-2.5 text-xs">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+                            <span class="text-slate-200 font-bold">課室連線頻道：</span>
+                            <input id="standby-room-code-input" type="text" value="SHANHAI01" class="bg-slate-900 border border-slate-700 rounded px-2 py-0.5 font-mono text-amber-300 w-24 text-center font-bold">
+                            <button onclick="syncStandbyRoomCode()" class="px-2.5 py-1 rounded bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/40 font-bold">重新同步</button>
+                        </div>
+                        <span id="standby-conn-status" class="text-amber-300 font-bold">
+                            <i class="fa-solid fa-rotate fa-spin mr-1"></i>每 3 秒自動同步控制版狀態中...
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Current Prepared Character Status on Standby Screen -->
+                <div class="bg-slate-900/95 rounded-2xl p-4 border border-slate-700 text-left flex flex-wrap items-center justify-between gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-11 h-11 rounded-xl bg-amber-500/20 border border-amber-400/50 flex items-center justify-center text-amber-300 text-lg font-black">
+                            <i class="fa-solid fa-user-shield"></i>
+                        </div>
+                        <div>
+                            <div class="text-xs text-slate-400">當前待機角色資料（可於下方預先匯入原版進度或匯出進度）：</div>
+                            <div id="standby-player-summary" class="text-sm sm:text-base font-black text-white">
+                                少俠 ｜ HP 600 / 攻 75 / 防 45 ｜ 累計對Boss總傷害：0
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="openSaveModal()" class="btn-gold px-3.5 py-2 rounded-xl font-bold text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-sliders"></i> 預先匯入 / 匯出遊戲進度
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Live Leaderboard inside Player Standby Screen (Prominent when game is ended or when players have damage) -->
+                <div id="standby-leaderboard-box" class="bg-slate-950/90 rounded-2xl p-4 sm:p-5 border border-amber-500/40 text-left">
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
                         <h3 class="serif-title text-base sm:text-lg font-bold text-amber-300">
-                            <i class="fa-solid fa-ranking-star mr-1.5"></i>異世界機械山海王 · 傷害總數排名榜
+                            <i class="fa-solid fa-ranking-star mr-1.5"></i>異世界機械山海王 · 玩家總傷害排名榜
                         </h3>
-                        <span class="text-xs font-mono text-slate-400">依累積傷害 HP 排序</span>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="downloadLeaderboardCSV()" class="px-3 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-200 border border-amber-400/50 text-xs font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-file-csv"></i> 下載排名資料 (.csv)
+                            </button>
+                            <button onclick="downloadLeaderboardJSON()" class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 text-xs font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-download"></i> 下載排名 (.json)
+                            </button>
+                        </div>
                     </div>
                     <div id="player-locked-leaderboard" class="space-y-2 max-h-64 overflow-y-auto pr-1">
                         <!-- Populated dynamically -->
                     </div>
                 </div>
 
-                <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                <!-- Direct Export Progress Box -->
+                <div class="bg-slate-900/90 rounded-2xl p-4 border border-emerald-500/40 text-left space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <div>
+                            <h4 class="font-bold text-sm text-emerald-300"><i class="fa-solid fa-floppy-disk mr-1.5"></i>待機版面 · 匯出你的遊戲進度（雙向共通《香江風雲錄》與《天宮修練版01》）</h4>
+                            <p class="text-xs text-slate-400">你在此局提升的所有戰鬥能力、奇禽異獸與 5倍攻/10倍防神裝已自動保存，可隨時一鍵複製進度代碼或下載進度檔！</p>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <button onclick="copySaveCode()" class="btn-jade px-4 py-2.5 rounded-xl font-black text-xs flex items-center gap-1.5">
+                                <i class="fa-solid fa-copy"></i> 一鍵複製進度代碼
+                            </button>
+                            <button onclick="exportSaveFile()" class="btn-gold px-4 py-2.5 rounded-xl font-black text-xs flex items-center gap-1.5">
+                                <i class="fa-solid fa-download"></i> 下載進度檔 (.json)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center justify-center gap-3 pt-1">
                     <button onclick="openSaveModal()" class="btn-gold px-5 py-3 rounded-xl font-black text-xs sm:text-sm flex items-center gap-2">
                         <i class="fa-solid fa-file-export"></i> 儲存 / 匯出角色進度回《香江風雲錄》
+                    </button>
+                    <button onclick="enterPlayerStandbyHub()" class="hidden bg-slate-800 hover:bg-slate-700 text-cyan-200 border border-cyan-500/40 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm items-center gap-2 transition">
+                        <i class="fa-solid fa-shield-cat"></i> 返回待機主版面 (檢視能力/背包/溫習題庫)
                     </button>
                     <button onclick="switchAppRole('controller')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 px-4 py-3 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 transition">
                         <i class="fa-solid fa-satellite-dish text-rose-400"></i> 切換至「控制版」重新開始遊戲
@@ -386,7 +511,7 @@
         <!-- =================================================================== -->
         <!-- 1. SCREEN: WELCOME & IMPORT FROM ORIGINAL / NAME INPUT              -->
         <!-- =================================================================== -->
-        <section id="screen-welcome" class="my-auto py-4">
+        <section id="screen-welcome" class="hidden my-auto py-4">
             <div class="wuxia-card rounded-2xl p-5 sm:p-8 border-2 border-cyan-500/40 relative overflow-hidden">
                 <!-- Background Decorative Glow -->
                 <div class="text-center max-w-3xl mx-auto mb-6">
@@ -521,8 +646,8 @@
                 <!-- Quiz Header -->
                 <div class="flex flex-wrap items-center justify-between gap-2 pb-4 mb-4 border-b border-slate-800">
                     <div class="flex items-center gap-3">
-                        <div class="relative shrink-0 cursor-pointer group" onclick="previewCharacterArt('太虛傳道師公 · 備戰特訓宗師', CHARACTER_ART.shigong)">
-                            <img src="https://i.postimg.cc/J4RvpDPt/CSD-RPG-01-shi-fu.png" referrerpolicy="no-referrer" alt="師公"
+                        <div class="relative shrink-0 cursor-pointer group" onclick="previewCharacterArt('與師公修行備戰 · 太虛傳道宗師（師公）', CHARACTER_ART.shigong)">
+                            <img src="https://i.postimg.cc/9fNC8Mz9/CSD-RPG-20-tai-xu-chuan-dao-zong-shi-(shi-gong).png" referrerpolicy="no-referrer" alt="師公"
                                 class="w-12 h-12 sm:w-14 sm:h-14 rounded-xl object-cover border-2 border-amber-400 shadow-lg bg-slate-900 group-hover:scale-105 transition"
                                 onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');">
                             <div class="hidden w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-amber-500/20 border-2 border-amber-400 items-center justify-center text-amber-300 text-xl">
@@ -693,6 +818,37 @@
                 </div>
             </div>
 
+            <!-- STANDBY STATUS BANNER IN HUB (Shown when Controller has not started or has ended the game) -->
+            <div id="hub-standby-banner" class="wuxia-card rounded-2xl p-4 sm:p-5 border-2 border-amber-500/70 bg-gradient-to-r from-amber-950/50 via-slate-900 to-rose-950/50">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-start gap-3.5">
+                        <div id="hub-standby-icon-box" class="w-12 h-12 rounded-xl bg-amber-500/20 border border-amber-400 flex items-center justify-center text-amber-300 text-xl shrink-0 mt-0.5">
+                            <i class="fa-solid fa-hourglass-half"></i>
+                        </div>
+                        <div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span id="hub-standby-pill" class="text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950">玩家待機模式</span>
+                                <span class="text-xs text-amber-200 font-bold">受「控制版」統一管理</span>
+                            </div>
+                            <h3 id="hub-standby-title" class="serif-title text-base sm:text-xl font-black text-white mt-1">
+                                「控制版」尚未開始遊戲 —— 目前只可於待機版面備戰，暫不能進入兩大遊戲
+                            </h3>
+                            <p id="hub-standby-desc" class="text-xs text-slate-300 mt-1 leading-relaxed">
+                                在「控制版」按下「開始遊戲」前，你可在此待機版面檢視戰鬥能力與隨身背包、檢查已答對題目、學習 480 條題庫或儲存/匯出遊戲進度；當「控制版」開始遊戲後，「齊打異世界機械山海王」與「與師公修行備戰」將即時解鎖！
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2 shrink-0">
+                        <button onclick="openSaveModal()" class="btn-gold px-4 py-2.5 rounded-xl font-black text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-export"></i> 匯出遊戲進度
+                        </button>
+                        <button onclick="switchHubTab('leaderboard')" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-amber-500/40 px-3.5 py-2.5 rounded-xl font-bold text-xs flex items-center gap-1.5">
+                            <i class="fa-solid fa-trophy"></i> 檢視排名榜與下載
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <!-- HUB TAB 1: TWO GAME MODES (Responsive Side-by-Side on Tablet/Desktop) -->
             <div id="hub-tab-modes" class="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch">
                 <!-- Left Column (7 cols): Mode 1 - 齊打異世界機械山海王 (集體打 Boss) -->
@@ -708,8 +864,8 @@
                         </div>
 
                         <div class="flex items-center gap-3.5 mb-3">
-                            <div class="relative shrink-0 cursor-pointer group" onclick="previewCharacterArt('異世界機械山海王 · 三階段破界巨神', CHARACTER_ART.mechaBoss)">
-                                <img src="https://i.postimg.cc/Yq8VZrsQ/CSD-RPG-05-gong-min-meng-zhu.png" referrerpolicy="no-referrer" alt="異世界機械山海王"
+                            <div class="relative shrink-0 cursor-pointer group" onclick="previewCurrentPhaseBossArt()">
+                                <img id="hub-boss-img" src="https://i.postimg.cc/bwNVPm42/CSD-RPG-17a-yi-shi-jie-ji-xie-shan-hai-wang-di-yi-zhuang-tai-zheng-chang-mo-shi.png" referrerpolicy="no-referrer" alt="異世界機械山海王"
                                     class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-rose-400 shadow-lg bg-slate-950 group-hover:scale-105 transition"
                                     onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');">
                                 <div class="hidden w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-rose-500/20 text-rose-300 border-2 border-rose-400 items-center justify-center text-3xl">
@@ -741,28 +897,46 @@
                             </div>
                         </div>
 
-                        <!-- 3 Phases Breakdown Box -->
+                        <!-- 3 Phases Breakdown Box (點擊頭像可放大預覽三階段專屬立繪) -->
                         <div class="space-y-2 mb-4 text-xs">
-                            <div id="phase-card-1" class="p-2.5 rounded-xl bg-slate-900/90 border border-rose-500/50">
-                                <div class="font-bold text-amber-300 flex items-center justify-between">
-                                    <span>狀態一：正常模式（HP 100,000,000）</span>
-                                    <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-200">全異獸 3 階</span>
+                            <div id="phase-card-1" class="p-2.5 rounded-xl bg-slate-900/90 border border-rose-500/50 flex items-center gap-3">
+                                <img src="https://i.postimg.cc/bwNVPm42/CSD-RPG-17a-yi-shi-jie-ji-xie-shan-hai-wang-di-yi-zhuang-tai-zheng-chang-mo-shi.png" referrerpolicy="no-referrer" alt="正常模式"
+                                    onclick="previewCurrentPhaseBossArt(1)"
+                                    class="w-11 h-11 rounded-lg object-cover border border-amber-400/60 shrink-0 cursor-pointer hover:scale-105 transition bg-slate-950"
+                                    onerror="this.style.display='none'">
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-bold text-amber-300 flex items-center justify-between">
+                                        <span id="pcard-1-title">狀態一：正常模式（HP 100,000,000）</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-200">全異獸 3 階</span>
+                                    </div>
+                                    <p id="pcard-1-desc" class="text-[11px] text-slate-300 mt-0.5">攻 5,000 / 防 10,000 / 閃避 20% / 必殺 100%。每 2 回合使用「相柳·九首劇毒」。</p>
                                 </div>
-                                <p class="text-[11px] text-slate-300 mt-0.5">攻 5,000 / 防 10,000 / 閃避 20% / 必殺 100%。每 2 回合使用「相柳·九首劇毒」。</p>
                             </div>
-                            <div id="phase-card-2" class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                                <div class="font-bold text-orange-300 flex items-center justify-between">
-                                    <span>狀態二：老羞成怒模式（HP 100,000,000）</span>
-                                    <span class="text-[10px] px-2 py-0.5 rounded bg-orange-500/20 text-orange-200">全異獸 5 階</span>
+                            <div id="phase-card-2" class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center gap-3">
+                                <img src="https://i.postimg.cc/qvMDr1W3/CSD-RPG-18a-yi-shi-jie-ji-xie-shan-hai-wang-di-er-zhuang-tai-lao-xiu-cheng-nu-mo-shi.png" referrerpolicy="no-referrer" alt="老羞成怒模式"
+                                    onclick="previewCurrentPhaseBossArt(2)"
+                                    class="w-11 h-11 rounded-lg object-cover border border-orange-400/60 shrink-0 cursor-pointer hover:scale-105 transition bg-slate-950"
+                                    onerror="this.style.display='none'">
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-bold text-orange-300 flex items-center justify-between">
+                                        <span id="pcard-2-title">狀態二：老羞成怒模式（HP 100,000,000）</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-orange-500/20 text-orange-200">全異獸 5 階</span>
+                                    </div>
+                                    <p id="pcard-2-desc" class="text-[11px] text-slate-300 mt-0.5">攻 25,000 / 防 10,000 / 閃避 30%。每 2 回合用「相柳·九首劇毒」、每 5 回合優先用「雷神·雷澤震擊·昏迷」；HP≦10,000 時觸發 45% 低血量暴擊！</p>
                                 </div>
-                                <p class="text-[11px] text-slate-300 mt-0.5">攻 25,000 / 防 10,000 / 閃避 30%。每 2 回合用「相柳·九首劇毒」、每 5 回合優先用「雷神·雷澤震擊·昏迷」；HP≦10,000 時觸發 45% 低血量暴擊！</p>
                             </div>
-                            <div id="phase-card-3" class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800">
-                                <div class="font-bold text-rose-300 flex items-center justify-between">
-                                    <span>狀態三：破防模式（HP 300,000,000）</span>
-                                    <span class="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-200">全異獸 7 階</span>
+                            <div id="phase-card-3" class="p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 flex items-center gap-3">
+                                <img src="https://i.postimg.cc/7ZssZgyP/CSD-RPG-19a-yi-shi-jie-ji-xie-shan-hai-wang-di-san-zhuang-tai-po-fang-mo-shi.png" referrerpolicy="no-referrer" alt="破防模式"
+                                    onclick="previewCurrentPhaseBossArt(3)"
+                                    class="w-11 h-11 rounded-lg object-cover border border-rose-400/60 shrink-0 cursor-pointer hover:scale-105 transition bg-slate-950"
+                                    onerror="this.style.display='none'">
+                                <div class="flex-1 min-w-0">
+                                    <div class="font-bold text-rose-300 flex items-center justify-between">
+                                        <span id="pcard-3-title">狀態三：破防模式（HP 300,000,000）</span>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-purple-500/20 text-purple-200">全異獸 7 階</span>
+                                    </div>
+                                    <p id="pcard-3-desc" class="text-[11px] text-slate-300 mt-0.5">攻 30,000 / 防 30,000 / 閃避 40%。每 2 回合用「相柳·九首劇毒」、每 5 回合優先用「猙·五尾威壓」；HP≦10,000 時觸發 55% 低血量暴擊！</p>
                                 </div>
-                                <p class="text-[11px] text-slate-300 mt-0.5">攻 30,000 / 防 30,000 / 閃避 40%。每 2 回合用「相柳·九首劇毒」、每 5 回合優先用「猙·五尾威壓」；HP≦10,000 時觸發 55% 低血量暴擊！</p>
                             </div>
                         </div>
                     </div>
@@ -779,12 +953,12 @@
                             <span class="text-xs font-bold uppercase tracking-wider px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
                                 遊戲選擇二 · 快速強化戰力
                             </span>
-                            <span class="text-xs font-bold text-amber-300"><i class="fa-solid fa-Angles-up mr-1"></i>答對連選 2 秘笈(2倍升幅)</span>
+                            <span id="hub-shigong-top-badge" class="text-xs font-bold text-amber-300"><i class="fa-solid fa-angles-up mr-1"></i>答對連選 2 秘笈(2倍升幅)</span>
                         </div>
 
                         <div class="flex items-center gap-3.5 mb-3">
-                            <div class="relative shrink-0 cursor-pointer group" onclick="previewCharacterArt('太虛傳道師公 · 與師公修行備戰', CHARACTER_ART.shigong)">
-                                <img src="https://i.postimg.cc/J4RvpDPt/CSD-RPG-01-shi-fu.png" referrerpolicy="no-referrer" alt="師公"
+                            <div class="relative shrink-0 cursor-pointer group" onclick="previewCharacterArt('與師公修行備戰 · 太虛傳道宗師（師公）', CHARACTER_ART.shigong)">
+                                <img src="https://i.postimg.cc/9fNC8Mz9/CSD-RPG-20-tai-xu-chuan-dao-zong-shi-(shi-gong).png" referrerpolicy="no-referrer" alt="師公"
                                     class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-emerald-400 shadow-lg bg-slate-900 group-hover:scale-105 transition"
                                     onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');">
                                 <div class="hidden w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-emerald-500/20 border-2 border-emerald-400 items-center justify-center text-emerald-300 text-2xl">
@@ -805,7 +979,7 @@
                         <div class="bg-slate-950/85 border border-slate-800 rounded-xl p-3.5 mb-4 space-y-2 text-xs">
                             <div class="flex items-center justify-between">
                                 <span class="text-slate-400">修行獎勵：</span>
-                                <span class="font-bold text-emerald-300">每答對 1 題連選 2 個秘笈 (原版 2 倍升幅)</span>
+                                <span id="hub-shigong-rule-text" class="font-bold text-emerald-300">每答對 1 題連選 2 個秘笈 (原版 2 倍升幅)</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-slate-400">戰敗重修規則：</span>
@@ -821,19 +995,19 @@
                         <div class="mb-4">
                             <label class="text-xs text-slate-400 block mb-1.5">可選擇綜合隨機或指定導學案開始與師公修行：</label>
                             <div class="space-y-2">
-                                <button onclick="startShigongTraining(0)" class="w-full text-left p-2.5 rounded-xl bg-slate-900 hover:bg-emerald-950/60 border border-emerald-500/40 transition flex items-center justify-between text-xs">
+                                <button onclick="startShigongTraining(0)" class="shigong-entry-btn w-full text-left p-2.5 rounded-xl bg-slate-900 hover:bg-emerald-950/60 border border-emerald-500/40 transition flex items-center justify-between text-xs">
                                     <span class="font-bold text-emerald-200"><i class="fa-solid fa-layer-group mr-1.5"></i>導學案 01 + 02 + 03 綜合隨機修行</span>
                                     <span class="font-mono text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300">共 240 題</span>
                                 </button>
-                                <button onclick="startShigongTraining(1)" class="w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 transition flex items-center justify-between text-xs">
+                                <button onclick="startShigongTraining(1)" class="shigong-entry-btn w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 transition flex items-center justify-between text-xs">
                                     <span class="text-slate-200">導學案01：香港問題的由來</span>
                                     <span id="shigong-t1-cnt" class="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-800 text-amber-300">0/80</span>
                                 </button>
-                                <button onclick="startShigongTraining(2)" class="w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 transition flex items-center justify-between text-xs">
+                                <button onclick="startShigongTraining(2)" class="shigong-entry-btn w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 transition flex items-center justify-between text-xs">
                                     <span class="text-slate-200">導學案02：國家與香港特區憲制關係</span>
                                     <span id="shigong-t2-cnt" class="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-800 text-amber-300">0/80</span>
                                 </button>
-                                <button onclick="startShigongTraining(3)" class="w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 transition flex items-center justify-between text-xs">
+                                <button onclick="startShigongTraining(3)" class="shigong-entry-btn w-full text-left p-2.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-700 transition flex items-center justify-between text-xs">
                                     <span class="text-slate-200">導學案03：總體國家安全觀與香港國安法</span>
                                     <span id="shigong-t3-cnt" class="font-mono text-[11px] px-2 py-0.5 rounded bg-slate-800 text-amber-300">0/80</span>
                                 </button>
@@ -841,7 +1015,7 @@
                         </div>
                     </div>
 
-                    <button onclick="startShigongTraining(0)" class="w-full btn-jade py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg">
+                    <button id="btn-enter-shigong-main" onclick="startShigongTraining(0)" class="w-full btn-jade py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg">
                         <i class="fa-solid fa-graduation-cap"></i> 立即進入「與師公修行備戰」(連選2秘笈)
                     </button>
                 </div>
@@ -1000,7 +1174,15 @@
                             </h3>
                             <p class="text-xs text-slate-400">以每位玩家對「異世界機械山海王」造成的 HP 傷害總數排列</p>
                         </div>
-                        <span id="hub-lb-total-dmg" class="text-xs font-mono bg-rose-500/20 text-rose-300 border border-rose-500/40 px-3 py-1 rounded-lg font-bold">全場總傷害：0</span>
+                        <div class="flex flex-wrap items-center gap-2">
+                            <span id="hub-lb-total-dmg" class="text-xs font-mono bg-rose-500/20 text-rose-300 border border-rose-500/40 px-3 py-1.5 rounded-lg font-bold">全場總傷害：0</span>
+                            <button onclick="downloadLeaderboardCSV()" class="btn-gold px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-file-csv"></i> 下載排名資料 (.csv)
+                            </button>
+                            <button onclick="downloadLeaderboardJSON()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-download"></i> 下載 (.json)
+                            </button>
+                        </div>
                     </div>
                     <div id="hub-leaderboard-list" class="space-y-2 max-h-[500px] overflow-y-auto pr-1">
                         <!-- Dynamically rendered -->
@@ -1079,8 +1261,8 @@
                 <div id="battle-boss-card" class="mecha-card rounded-2xl p-4 border-r-4 border-r-rose-500">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2.5">
-                            <div class="relative shrink-0 cursor-pointer group" onclick="previewCharacterArt('異世界機械山海王', CHARACTER_ART.mechaBoss)">
-                                <img id="battle-boss-img" src="https://i.postimg.cc/Yq8VZrsQ/CSD-RPG-05-gong-min-meng-zhu.png" referrerpolicy="no-referrer" alt="機械山海王"
+                            <div class="relative shrink-0 cursor-pointer group" onclick="previewCurrentPhaseBossArt()">
+                                <img id="battle-boss-img" src="https://i.postimg.cc/bwNVPm42/CSD-RPG-17a-yi-shi-jie-ji-xie-shan-hai-wang-di-yi-zhuang-tai-zheng-chang-mo-shi.png" referrerpolicy="no-referrer" alt="機械山海王"
                                     class="w-12 h-12 rounded-xl object-cover border-2 border-rose-400 shadow-md bg-slate-950 group-hover:scale-105 transition"
                                     onerror="this.style.display='none'; this.nextElementSibling.classList.remove('hidden'); this.nextElementSibling.classList.add('flex');">
                                 <div id="battle-boss-icon-fallback" class="hidden w-12 h-12 rounded-xl bg-rose-500/20 border border-rose-500/40 items-center justify-center text-rose-300">
@@ -1405,8 +1587,11 @@
          *************************************************************************/
         const CONTROLLER_PASSCODE = '021011060906';
         const CHARACTER_ART = {
-            shigong: 'https://i.postimg.cc/J4RvpDPt/CSD-RPG-01-shi-fu.png',
-            mechaBoss: 'https://i.postimg.cc/Yq8VZrsQ/CSD-RPG-05-gong-min-meng-zhu.png'
+            shigong: 'https://i.postimg.cc/9fNC8Mz9/CSD-RPG-20-tai-xu-chuan-dao-zong-shi-(shi-gong).png',
+            mechaBossP1: 'https://i.postimg.cc/bwNVPm42/CSD-RPG-17a-yi-shi-jie-ji-xie-shan-hai-wang-di-yi-zhuang-tai-zheng-chang-mo-shi.png',
+            mechaBossP2: 'https://i.postimg.cc/qvMDr1W3/CSD-RPG-18a-yi-shi-jie-ji-xie-shan-hai-wang-di-er-zhuang-tai-lao-xiu-cheng-nu-mo-shi.png',
+            mechaBossP3: 'https://i.postimg.cc/7ZssZgyP/CSD-RPG-19a-yi-shi-jie-ji-xie-shan-hai-wang-di-san-zhuang-tai-po-fang-mo-shi.png',
+            mechaBoss: 'https://i.postimg.cc/bwNVPm42/CSD-RPG-17a-yi-shi-jie-ji-xie-shan-hai-wang-di-yi-zhuang-tai-zheng-chang-mo-shi.png'
         };
 
         function previewCharacterArt(title, imgUrl) {
@@ -1414,6 +1599,12 @@
             document.getElementById('art-preview-title').textContent = title;
             document.getElementById('art-preview-img').src = imgUrl;
             document.getElementById('modal-art-preview').classList.remove('hidden');
+        }
+
+        function previewCurrentPhaseBossArt(customPhase = null) {
+            const pNum = customPhase || (battleState && battleState.boss ? battleState.boss.phase : sharedRaidState.currentPhase) || 1;
+            const pCfg = MECHA_PHASES[pNum] || MECHA_PHASES[1];
+            previewCharacterArt(`異世界機械山海王 · ${pCfg.fullName}`, pCfg.imgUrl);
         }
 
         function closeArtPreview() {
@@ -1686,6 +1877,7 @@
                 phase: 1,
                 name: '正常模式',
                 fullName: '第一狀態：正常模式',
+                imgUrl: CHARACTER_ART.mechaBossP1,
                 maxHp: 100000000,
                 atk: 5000,
                 def: 10000,
@@ -1700,6 +1892,7 @@
                 phase: 2,
                 name: '老羞成怒模式',
                 fullName: '第二狀態：老羞成怒模式',
+                imgUrl: CHARACTER_ART.mechaBossP2,
                 maxHp: 100000000,
                 atk: 25000,
                 def: 10000,
@@ -1714,6 +1907,7 @@
                 phase: 3,
                 name: '破防模式',
                 fullName: '第三狀態：破防模式',
+                imgUrl: CHARACTER_ART.mechaBossP3,
                 maxHp: 300000000,
                 atk: 30000,
                 def: 30000,
@@ -1730,21 +1924,42 @@
          * 4. 實時共鬥房間狀態 (支援控制版與 1~40 名玩家跨裝置 PeerJS + 同機 BroadcastChannel)
          *************************************************************************/
         const STORAGE_KEY = 'CITIZENSHIP_MECHA_SHANHAI_SAVE_V1';
-        const SHARED_RAID_KEY = 'CITIZENSHIP_MECHA_SHARED_RAID_STATE_V1';
+        const SHARED_RAID_KEY = 'CITIZENSHIP_MECHA_SHARED_RAID_STATE_V3_STRICT';
 
         let currentAppRole = 'player'; // 'player' or 'controller'
         let controllerAuthenticated = false;
         let simBotInterval = null;
 
         let sharedRaidState = {
-            sessionStatus: 'active', // 'active' or 'ended'
+            sessionStatus: 'waiting', // 'waiting' (控制版未開始·待機), 'active' (進行中), 'ended' (控制版強制結束·退回待機與排名結算)
             roomCode: 'SHANHAI01',
             currentPhase: 1,
             phaseHp: 100000000,
             phaseMaxHp: 100000000,
+            bossPowerMultiplier: 1, // 1, 2, 5, 10, 50
+            shigongManualMultiplier: 2, // 2, 5, 7
             updatedAt: Date.now(),
             players: {} // playerId -> { id, name, hp, maxHp, atk, def, statusText, mode, turn, totalDamage, solvedCount, updatedAt }
         };
+
+        function getScaledMechaPhase(phaseNum = sharedRaidState.currentPhase) {
+            const base = MECHA_PHASES[phaseNum] || MECHA_PHASES[1];
+            const mult = Number(sharedRaidState.bossPowerMultiplier) || 1;
+            return {
+                ...base,
+                powerMult: mult,
+                maxHp: base.maxHp * mult,
+                atk: base.atk * mult,
+                def: base.def * mult,
+                ultMult: base.ultMult * mult,
+                lowHpThreshold: base.lowHpThreshold * mult
+            };
+        }
+
+        function getShigongManualMultiplier() {
+            const m = Number(sharedRaidState.shigongManualMultiplier);
+            return (m === 2 || m === 5 || m === 7) ? m : 2;
+        }
 
         let bcChannel = null;
         try {
@@ -1765,71 +1980,249 @@
             }
         });
 
-        // PeerJS Networking for GitHub Pages Cross-Device Classroom Co-op
+        // 雙重跨裝置實時同步引擎：
+        // 1) 純 HTTPS 穿牆雲端同步 (ntfy.sh EventSource SSE + 定期輪詢，不受學校 Wi-Fi 防火牆封鎖 P2P 影響，且支援老師手機+iPad多裝置同時控制)
+        // 2) PeerJS WebRTC P2P 自動重連同步 (配備每 3 秒自動重連與 STUN 伺服器)
         let peerInstance = null;
         let hostConnections = [];
         let clientConnection = null;
+        let peerReconnectTimer = null;
+        let cloudEventSource = null;
+        let cloudSubscribedRoom = '';
+        let lastCloudTimestamp = 0;
+
+        const PEER_ICE_CONFIG = {
+            config: {
+                iceServers: [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' }
+                ]
+            }
+        };
+
+        function getCleanRoomCode() {
+            const ctrlInp = document.getElementById('ctrl-room-code');
+            const stInp = document.getElementById('standby-room-code-input');
+            const pInp = document.getElementById('player-room-code-input');
+            const raw = (currentAppRole === 'controller' && ctrlInp)
+                ? ctrlInp.value
+                : (stInp && !document.getElementById('screen-player-locked').classList.contains('hidden'))
+                    ? stInp.value
+                    : (pInp ? pInp.value : sharedRaidState.roomCode);
+            return String(raw || 'SHANHAI01').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '') || 'SHANHAI01';
+        }
 
         function getPeerHostId(roomCode) {
-            const clean = String(roomCode || 'SHANHAI01').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '');
-            return `csd-mecha-shanhai-host-${clean || 'SHANHAI01'}`;
+            return `csd-mecha-shanhai-host-${roomCode || 'SHANHAI01'}`;
+        }
+
+        function getCloudTopicUrl(roomCode) {
+            return `https://ntfy.sh/csd_mecha_shanhai_v3_${(roomCode || 'SHANHAI01').toLowerCase()}`;
+        }
+
+        // 啟動純 HTTPS 雲端訊息訂閱 (SSE) 與歷史控制訊號讀取
+        function initCloudRelaySubscription(roomCode) {
+            const cleanRoom = roomCode || getCleanRoomCode();
+            if (cloudSubscribedRoom === cleanRoom && cloudEventSource && cloudEventSource.readyState !== 2) {
+                return;
+            }
+            cloudSubscribedRoom = cleanRoom;
+            try {
+                if (cloudEventSource) cloudEventSource.close();
+                const sseUrl = `${getCloudTopicUrl(cleanRoom)}/sse?since=20m`;
+                cloudEventSource = new EventSource(sseUrl);
+                cloudEventSource.onmessage = (ev) => {
+                    try {
+                        const wrapper = JSON.parse(ev.data);
+                        if (wrapper && wrapper.message) {
+                            const payload = JSON.parse(wrapper.message);
+                            if (payload && payload._ts && payload._ts >= lastCloudTimestamp) {
+                                if (payload.type === 'SESSION_CONTROL') {
+                                    lastCloudTimestamp = payload._ts;
+                                }
+                                handleIncomingSyncMessage(payload);
+                            }
+                        }
+                    } catch (e) {}
+                };
+            } catch (e) {}
+            pollCloudControlStateOnce(cleanRoom);
+        }
+
+        // 主動透過 HTTPS 查詢最近 20 分鐘內控制版發出的最新狀態（解決學生比老師晚開或早開網頁、或學校封鎖 WebRTC 的問題）
+        function pollCloudControlStateOnce(roomCode) {
+            const cleanRoom = roomCode || getCleanRoomCode();
+            try {
+                fetch(`https://ntfy.sh/csd_mecha_shanhai_v3_${(cleanRoom || "SHANHAI01").toLowerCase()}/json?poll=1&since=20m`)
+                    .then(r => r.text())
+                    .then(text => {
+                        if (!text) return;
+                        const lines = text.trim().split('\n');
+                        let latestCtrlMsg = null;
+                        lines.forEach(line => {
+                            try {
+                                const w = JSON.parse(line);
+                                if (w && w.message) {
+                                    const msg = JSON.parse(w.message);
+                                    if (msg && msg.type === 'SESSION_CONTROL') {
+                                        if (!latestCtrlMsg || (msg._ts || 0) >= (latestCtrlMsg._ts || 0)) {
+                                            latestCtrlMsg = msg;
+                                        }
+                                    } else if (msg && (msg.type === 'PLAYER_UPDATE' || msg.type === 'PLAYER_DAMAGE')) {
+                                        handleIncomingSyncMessage(msg);
+                                    }
+                                }
+                            } catch (e) {}
+                        });
+                        if (latestCtrlMsg && (latestCtrlMsg._ts || 0) >= lastCloudTimestamp) {
+                            lastCloudTimestamp = latestCtrlMsg._ts || Date.now();
+                            handleIncomingSyncMessage(latestCtrlMsg);
+                        }
+                    })
+                    .catch(() => {});
+            } catch (e) {}
+        }
+
+        function publishToCloudRelay(msg) {
+            const cleanRoom = sharedRaidState.roomCode || getCleanRoomCode();
+            const enriched = { ...msg, _ts: Date.now() };
+            if (msg.type === 'SESSION_CONTROL') {
+                lastCloudTimestamp = enriched._ts;
+            }
+            try {
+                fetch(getCloudTopicUrl(cleanRoom), {
+                    method: 'POST',
+                    body: JSON.stringify(enriched)
+                }).catch(() => {});
+            } catch (e) {}
         }
 
         function reconnectPeerHost() {
-            const codeInput = document.getElementById('ctrl-room-code');
-            const roomCode = (codeInput ? codeInput.value.trim().toUpperCase() : 'SHANHAI01') || 'SHANHAI01';
+            const roomCode = getCleanRoomCode();
             sharedRaidState.roomCode = roomCode;
-            document.getElementById('ctrl-peer-status').textContent = `連線頻道：${roomCode} (正在啟動跨裝置主機...)`;
+            initCloudRelaySubscription(roomCode);
+            const peerBadge = document.getElementById('ctrl-peer-status');
+            if (peerBadge) peerBadge.textContent = `連線頻道：${roomCode} (HTTPS穿牆雲端 + P2P 雙重同步已啟動)`;
 
-            if (typeof Peer === 'undefined') {
-                document.getElementById('ctrl-peer-status').textContent = `本機同步頻道：${roomCode}`;
-                return;
-            }
+            if (typeof Peer === 'undefined') return;
             try {
                 if (peerInstance) peerInstance.destroy();
-                peerInstance = new Peer(getPeerHostId(roomCode));
-                peerInstance.on('open', (id) => {
-                    document.getElementById('ctrl-peer-status').textContent = `跨裝置頻道已就緒：${roomCode}`;
+                peerInstance = new Peer(getPeerHostId(roomCode), PEER_ICE_CONFIG);
+                peerInstance.on('open', () => {
+                    if (peerBadge) peerBadge.textContent = `✅ 跨裝置雙重頻道已就緒：${roomCode}`;
                 });
                 peerInstance.on('connection', (conn) => {
                     hostConnections.push(conn);
                     conn.on('open', () => {
+                        conn.send({
+                            type: 'SESSION_CONTROL',
+                            sessionStatus: sharedRaidState.sessionStatus,
+                            bossPowerMultiplier: sharedRaidState.bossPowerMultiplier,
+                            shigongManualMultiplier: sharedRaidState.shigongManualMultiplier,
+                            currentPhase: sharedRaidState.currentPhase,
+                            phaseHp: sharedRaidState.phaseHp,
+                            _ts: Date.now()
+                        });
                         conn.send({ type: 'FULL_STATE', state: sharedRaidState });
                     });
                     conn.on('data', (data) => {
+                        if (data && data.type === 'REQUEST_STATE') {
+                            conn.send({
+                                type: 'SESSION_CONTROL',
+                                sessionStatus: sharedRaidState.sessionStatus,
+                                bossPowerMultiplier: sharedRaidState.bossPowerMultiplier,
+                                shigongManualMultiplier: sharedRaidState.shigongManualMultiplier,
+                                currentPhase: sharedRaidState.currentPhase,
+                                phaseHp: sharedRaidState.phaseHp,
+                                _ts: Date.now()
+                            });
+                            conn.send({ type: 'FULL_STATE', state: sharedRaidState });
+                            return;
+                        }
                         handleIncomingSyncMessage(data);
                         broadcastToPeerClients({ type: 'FULL_STATE', state: sharedRaidState });
                     });
                 });
-                peerInstance.on('error', () => {
-                    document.getElementById('ctrl-peer-status').textContent = `頻道：${roomCode} (本機/區網同步已啟用)`;
+                peerInstance.on('error', (err) => {
+                    // 若老師同時在手機與 iPad 登入控制版，第二部裝置自動連向第一部主機並透過 HTTPS 雲端共同控制
+                    if (err && err.type === 'unavailable-id') {
+                        if (peerBadge) peerBadge.textContent = `✅ 多裝置控制版協同模式：${roomCode}`;
+                        connectSecondaryControllerAsClient(roomCode);
+                    }
+                });
+            } catch (e) {}
+        }
+
+        function connectSecondaryControllerAsClient(roomCode) {
+            try {
+                peerInstance = new Peer(PEER_ICE_CONFIG);
+                peerInstance.on('open', () => {
+                    clientConnection = peerInstance.connect(getPeerHostId(roomCode));
+                    clientConnection.on('open', () => {
+                        clientConnection.send({ type: 'REQUEST_STATE' });
+                    });
+                    clientConnection.on('data', (data) => {
+                        handleIncomingSyncMessage(data);
+                    });
                 });
             } catch (e) {}
         }
 
         function connectPlayerToPeerHost() {
-            const codeInput = document.getElementById('player-room-code-input');
-            const roomCode = (codeInput ? codeInput.value.trim().toUpperCase() : 'SHANHAI01') || 'SHANHAI01';
+            const roomCode = getCleanRoomCode();
             sharedRaidState.roomCode = roomCode;
-            const statusEl = document.getElementById('player-conn-status-text');
-            if (statusEl) statusEl.textContent = `已同步頻道 ${roomCode}（支援跨裝置與同機實時連線）`;
+            initCloudRelaySubscription(roomCode);
 
-            if (typeof Peer === 'undefined') return;
+            const statusEl = document.getElementById('player-conn-status-text');
+            const stStatusEl = document.getElementById('standby-conn-status');
+
+            if (typeof Peer !== 'undefined' && !controllerAuthenticated) {
+                try {
+                    if (!peerInstance || peerInstance.destroyed || peerInstance.disconnected) {
+                        if (peerInstance) peerInstance.destroy();
+                        peerInstance = new Peer(PEER_ICE_CONFIG);
+                        peerInstance.on('open', () => {
+                            attemptPlayerPeerConnect(roomCode);
+                        });
+                    } else if (!clientConnection || !clientConnection.open) {
+                        attemptPlayerPeerConnect(roomCode);
+                    } else {
+                        clientConnection.send({ type: 'REQUEST_STATE' });
+                    }
+                } catch (e) {}
+            }
+
+            // 啟動每 3 秒自動重連與雲端狀態同步計時器，確保學生比老師早開或晚開網頁都能自動收到「開始遊戲」訊號！
+            if (!peerReconnectTimer) {
+                peerReconnectTimer = setInterval(() => {
+                    const curRoom = getCleanRoomCode();
+                    pollCloudControlStateOnce(curRoom);
+                    if (!controllerAuthenticated && typeof Peer !== 'undefined') {
+                        if (!clientConnection || !clientConnection.open) {
+                            attemptPlayerPeerConnect(curRoom);
+                        } else {
+                            try { clientConnection.send({ type: 'REQUEST_STATE' }); } catch (e) {}
+                        }
+                    }
+                }, 3000);
+            }
+        }
+
+        function attemptPlayerPeerConnect(roomCode) {
+            if (!peerInstance || !peerInstance.open) return;
             try {
-                if (peerInstance && !controllerAuthenticated) peerInstance.destroy();
-                if (!controllerAuthenticated) {
-                    peerInstance = new Peer();
-                    peerInstance.on('open', () => {
-                        clientConnection = peerInstance.connect(getPeerHostId(roomCode));
-                        clientConnection.on('open', () => {
-                            if (statusEl) statusEl.textContent = `✅ 已連上控制版主機 (${roomCode})`;
-                            syncMyPlayerStatusToRaid();
-                        });
-                        clientConnection.on('data', (data) => {
-                            handleIncomingSyncMessage(data);
-                        });
-                    });
-                }
+                if (clientConnection && clientConnection.open) return;
+                clientConnection = peerInstance.connect(getPeerHostId(roomCode));
+                clientConnection.on('open', () => {
+                    const statusEl = document.getElementById('player-conn-status-text');
+                    if (statusEl) statusEl.textContent = `✅ 已連上控制版主機 (${roomCode})`;
+                    clientConnection.send({ type: 'REQUEST_STATE' });
+                    syncMyPlayerStatusToRaid();
+                });
+                clientConnection.on('data', (data) => {
+                    handleIncomingSyncMessage(data);
+                });
             } catch (e) {}
         }
 
@@ -1838,6 +2231,8 @@
                 try { if (c && c.open) c.send(msg); } catch (e) {}
             });
         }
+
+        let lastPlayerCloudPush = 0;
 
         function sendSyncMessage(msg) {
             handleIncomingSyncMessage(msg);
@@ -1852,9 +2247,19 @@
                     clientConnection.send(msg);
                 }
                 if (controllerAuthenticated) {
-                    broadcastToPeerClients({ type: 'FULL_STATE', state: sharedRaidState });
+                    broadcastToPeerClients(msg.type === 'SESSION_CONTROL' ? msg : { type: 'FULL_STATE', state: sharedRaidState });
                 }
             } catch (e) {}
+            // 透過 HTTPS 穿牆雲端同步傳送控制指令與傷害更新
+            if (msg.type === 'SESSION_CONTROL' || msg.type === 'PLAYER_DAMAGE') {
+                publishToCloudRelay(msg);
+            } else if (msg.type === 'PLAYER_UPDATE') {
+                const now = Date.now();
+                if (now - lastPlayerCloudPush > 4000) {
+                    lastPlayerCloudPush = now;
+                    publishToCloudRelay(msg);
+                }
+            }
         }
 
         function handleIncomingSyncMessage(msg) {
@@ -1871,12 +2276,17 @@
                 };
                 refreshAllRaidUI();
             } else if (msg.type === 'SESSION_CONTROL') {
-                sharedRaidState.sessionStatus = msg.sessionStatus;
+                if (msg.sessionStatus) sharedRaidState.sessionStatus = msg.sessionStatus;
+                if (msg.bossPowerMultiplier) sharedRaidState.bossPowerMultiplier = Number(msg.bossPowerMultiplier) || 1;
+                if (msg.shigongManualMultiplier) sharedRaidState.shigongManualMultiplier = Number(msg.shigongManualMultiplier) || 2;
                 if (msg.currentPhase) {
-                    const pCfg = MECHA_PHASES[msg.currentPhase];
                     sharedRaidState.currentPhase = msg.currentPhase;
-                    sharedRaidState.phaseHp = msg.phaseHp !== undefined ? msg.phaseHp : pCfg.maxHp;
+                    const pCfg = getScaledMechaPhase(msg.currentPhase);
                     sharedRaidState.phaseMaxHp = pCfg.maxHp;
+                    sharedRaidState.phaseHp = msg.phaseHp !== undefined ? msg.phaseHp : pCfg.maxHp;
+                }
+                if (battleState) {
+                    syncBattleBossWithSharedState();
                 }
                 refreshAllRaidUI();
                 enforceSessionGateOnPlayer();
@@ -1887,12 +2297,14 @@
             if (!remote) return;
             sharedRaidState.sessionStatus = remote.sessionStatus || sharedRaidState.sessionStatus;
             sharedRaidState.currentPhase = remote.currentPhase || sharedRaidState.currentPhase;
+            if (remote.bossPowerMultiplier) sharedRaidState.bossPowerMultiplier = Number(remote.bossPowerMultiplier) || 1;
+            if (remote.shigongManualMultiplier) sharedRaidState.shigongManualMultiplier = Number(remote.shigongManualMultiplier) || 2;
+            const pCfg = getScaledMechaPhase(sharedRaidState.currentPhase);
+            sharedRaidState.phaseMaxHp = remote.phaseMaxHp || pCfg.maxHp;
             sharedRaidState.phaseHp = remote.phaseHp !== undefined ? remote.phaseHp : sharedRaidState.phaseHp;
-            sharedRaidState.phaseMaxHp = remote.phaseMaxHp || MECHA_PHASES[sharedRaidState.currentPhase].maxHp;
             if (remote.players && typeof remote.players === 'object') {
                 sharedRaidState.players = { ...sharedRaidState.players, ...remote.players };
             }
-            // If currently in battle, keep battle boss synced with shared phase & HP
             if (battleState) {
                 syncBattleBossWithSharedState();
             }
@@ -1916,7 +2328,7 @@
                 if (sharedRaidState.phaseHp <= 0) {
                     if (sharedRaidState.currentPhase < 3) {
                         sharedRaidState.currentPhase += 1;
-                        const nextCfg = MECHA_PHASES[sharedRaidState.currentPhase];
+                        const nextCfg = getScaledMechaPhase(sharedRaidState.currentPhase);
                         sharedRaidState.phaseMaxHp = nextCfg.maxHp;
                         sharedRaidState.phaseHp = nextCfg.maxHp;
                     } else {
@@ -2044,7 +2456,13 @@
             let mode = customMode;
             let statusText = customStatusText;
             if (!mode) {
-                if (battleState) {
+                if (sharedRaidState.sessionStatus === 'waiting') {
+                    mode = 'standby';
+                    statusText = '待機中 (等待控制版開始)';
+                } else if (sharedRaidState.sessionStatus === 'ended') {
+                    mode = 'ended_standby';
+                    statusText = '已退回待機版面 (匯出進度)';
+                } else if (battleState) {
                     mode = 'battle';
                     statusText = `齊打機械山海王(第${battleState.turn}回合)`;
                 } else if (mechaMeta.forcedShigongQuestionsLeft > 0) {
@@ -2076,7 +2494,7 @@
         }
 
         /*************************************************************************
-         * 6. 控制版 (Controller) 邏輯：密碼 021011060906、開始/結束遊戲、1-40人監控與排名榜
+         * 6. 控制版 (Controller) 邏輯：開始/結束遊戲、1-40人監控與排名榜及下載
          *************************************************************************/
         function switchAppRole(role) {
             currentAppRole = role;
@@ -2102,7 +2520,7 @@
                 btnPlayer.className = 'px-3 py-1 rounded-lg text-xs font-bold bg-cyan-600 text-white shadow transition flex items-center gap-1.5';
                 btnCtrl.className = 'px-3 py-1 rounded-lg text-xs font-bold text-slate-300 hover:text-white transition flex items-center gap-1.5';
                 document.getElementById('screen-controller').classList.add('hidden');
-                if (sharedRaidState.sessionStatus === 'ended') {
+                if (sharedRaidState.sessionStatus !== 'active') {
                     enforceSessionGateOnPlayer();
                 } else if (battleState) {
                     showScreen('screen-battle');
@@ -2134,17 +2552,60 @@
             sharedRaidState.sessionStatus = 'active';
             if (sharedRaidState.phaseHp <= 0) {
                 sharedRaidState.currentPhase = 1;
-                sharedRaidState.phaseMaxHp = MECHA_PHASES[1].maxHp;
-                sharedRaidState.phaseHp = MECHA_PHASES[1].maxHp;
+                const p1 = getScaledMechaPhase(1);
+                sharedRaidState.phaseMaxHp = p1.maxHp;
+                sharedRaidState.phaseHp = p1.maxHp;
             }
-            document.getElementById('ctrl-leaderboard-section').classList.add('hidden');
+            Object.keys(sharedRaidState.players).forEach(k => {
+                if (sharedRaidState.players[k].mode === 'standby' || sharedRaidState.players[k].mode === 'ended_standby') {
+                    sharedRaidState.players[k].mode = 'hub';
+                    sharedRaidState.players[k].statusText = '戰場已開放·準備出戰';
+                }
+            });
             sendSyncMessage({
                 type: 'SESSION_CONTROL',
                 sessionStatus: 'active',
+                bossPowerMultiplier: sharedRaidState.bossPowerMultiplier,
+                shigongManualMultiplier: sharedRaidState.shigongManualMultiplier,
                 currentPhase: sharedRaidState.currentPhase,
                 phaseHp: sharedRaidState.phaseHp
             });
-            showDialog('限時遊戲已開始！', '已開放所有玩家進入《齊打異世界機械山海王》！控制版現正實時顯示 1～40 名玩家的戰鬥狀況與 Boss 血量。', 'fa-play text-emerald-400');
+            renderControllerDashboard();
+            showDialog('限時遊戲已開始！', `已解除所有「玩家版」的待機限制，開放進入「齊打異世界機械山海王」（當前強度：${sharedRaidState.bossPowerMultiplier}倍）與「與師公修行備戰」（當前秘笈升幅：原版${sharedRaidState.shigongManualMultiplier}倍）！`, 'fa-play text-emerald-400');
+        }
+
+        function controllerSetBossPower(mult) {
+            const validMult = [1, 2, 5, 10, 50].includes(Number(mult)) ? Number(mult) : 1;
+            const prevMax = Math.max(1, sharedRaidState.phaseMaxHp || 100000000);
+            const hpRatio = Math.max(0, Math.min(1, sharedRaidState.phaseHp / prevMax));
+            sharedRaidState.bossPowerMultiplier = validMult;
+            const scaledCfg = getScaledMechaPhase(sharedRaidState.currentPhase);
+            sharedRaidState.phaseMaxHp = scaledCfg.maxHp;
+            sharedRaidState.phaseHp = Math.max(1, Math.round(scaledCfg.maxHp * (hpRatio > 0 ? hpRatio : 1)));
+
+            sendSyncMessage({
+                type: 'SESSION_CONTROL',
+                sessionStatus: sharedRaidState.sessionStatus,
+                bossPowerMultiplier: validMult,
+                shigongManualMultiplier: sharedRaidState.shigongManualMultiplier,
+                currentPhase: sharedRaidState.currentPhase,
+                phaseHp: sharedRaidState.phaseHp
+            });
+            renderControllerDashboard();
+        }
+
+        function controllerSetShigongMultiplier(mult) {
+            const validMult = [2, 5, 7].includes(Number(mult)) ? Number(mult) : 2;
+            sharedRaidState.shigongManualMultiplier = validMult;
+            sendSyncMessage({
+                type: 'SESSION_CONTROL',
+                sessionStatus: sharedRaidState.sessionStatus,
+                bossPowerMultiplier: sharedRaidState.bossPowerMultiplier,
+                shigongManualMultiplier: validMult,
+                currentPhase: sharedRaidState.currentPhase,
+                phaseHp: sharedRaidState.phaseHp
+            });
+            renderControllerDashboard();
         }
 
         function controllerEndGame() {
@@ -2154,19 +2615,127 @@
                 simBotInterval = null;
                 document.getElementById('btn-toggle-sim-bot').textContent = '啟動模擬自動作戰';
             }
+            Object.keys(sharedRaidState.players).forEach(k => {
+                sharedRaidState.players[k].mode = 'ended_standby';
+                sharedRaidState.players[k].statusText = '已退回待機版面 (匯出進度)';
+            });
             document.getElementById('ctrl-leaderboard-section').classList.remove('hidden');
             sendSyncMessage({
                 type: 'SESSION_CONTROL',
                 sessionStatus: 'ended'
             });
             renderControllerDashboard();
-            showDialog('限時遊戲已結束！', '已鎖定所有玩家畫面（玩家不能再次進入遊戲，直至控制版再開始遊戲），並已生成「異世界機械山海王總傷害排名榜」！', 'fa-trophy text-amber-400');
+            showDialog('已強制結束所有玩家遊玩並結算排名！', '所有正在遊玩「齊打異世界機械山海王」與「與師公修行備戰」的玩家已強制退回待機版面及匯出遊戲進度！你現在可於下方檢視及下載完整排名資料。', 'fa-trophy text-amber-400');
+        }
+
+        function controllerSetWaiting() {
+            sharedRaidState.sessionStatus = 'waiting';
+            if (simBotInterval) {
+                clearInterval(simBotInterval);
+                simBotInterval = null;
+                document.getElementById('btn-toggle-sim-bot').textContent = '啟動模擬自動作戰';
+            }
+            Object.keys(sharedRaidState.players).forEach(k => {
+                sharedRaidState.players[k].mode = 'standby';
+                sharedRaidState.players[k].statusText = '待機中 (等待控制版開始)';
+            });
+            sendSyncMessage({
+                type: 'SESSION_CONTROL',
+                sessionStatus: 'waiting'
+            });
+            renderControllerDashboard();
+            showDialog('已設為「未開始 · 全體待機」狀態', '所有「玩家版」目前已鎖定於待機畫面，不能進入遊戲，直至控制版按下「開始遊戲」。', 'fa-hourglass-half text-amber-400');
+        }
+
+        function syncStandbyRoomCode() {
+            const inp = document.getElementById('standby-room-code-input');
+            const pInp = document.getElementById('player-room-code-input');
+            if (inp && pInp) pInp.value = inp.value;
+            connectPlayerToPeerHost();
+            const stEl = document.getElementById('standby-conn-status');
+            if (stEl) stEl.textContent = `已同步頻道 ${inp ? inp.value.trim().toUpperCase() : 'SHANHAI01'} · 等待控制版開始信號`;
+        }
+
+        // 下載排名資料 (Excel 相容 UTF-8 BOM CSV 報表)
+        function downloadLeaderboardCSV() {
+            const players = getSortedPlayersLeaderboard();
+            const nowStr = new Date().toLocaleString('zh-HK', { hour12: false });
+            const totalDmg = players.reduce((acc, x) => acc + (x.totalDamage || 0), 0);
+            const pCfg = MECHA_PHASES[sharedRaidState.currentPhase] || MECHA_PHASES[1];
+
+            const headers = ['排名', '玩家名稱', '對異世界機械山海王總傷害(HP)', '已答對題數(480題庫)', '生命值上限(HP)', '攻擊力(ATK)', '防禦力(DEF)', '玩家狀態', '結算時間'];
+            const rows = players.map((p, idx) => [
+                idx + 1,
+                `"${String(p.name || '少俠').replace(/"/g, '""')}"`,
+                p.totalDamage || 0,
+                p.solvedCount || 0,
+                p.maxHp || 600,
+                p.atk || 75,
+                p.def || 45,
+                `"${String(p.statusText || '待機中').replace(/"/g, '""')}"`,
+                `"${nowStr}"`
+            ]);
+
+            rows.push([]);
+            rows.push(['全場統計', `"參戰人數：${players.length}人"`, `"全體累計總傷害：${totalDmg}"`, `"Boss當前狀態：${pCfg.fullName}"`, `"Boss當前剩餘HP：${sharedRaidState.phaseHp}"`, '', '', '', `"${nowStr}"`]);
+
+            const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `公民山海經_異世界機械山海王_傷害排名榜.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // 下載排名資料 (JSON 結構化檔案)
+        function downloadLeaderboardJSON() {
+            const players = getSortedPlayersLeaderboard();
+            const totalDmg = players.reduce((acc, x) => acc + (x.totalDamage || 0), 0);
+            const pCfg = MECHA_PHASES[sharedRaidState.currentPhase] || MECHA_PHASES[1];
+            const payload = {
+                gameTitle: '公民山海經：齊打異世界機械山海王',
+                exportedAt: new Date().toISOString(),
+                sessionStatus: sharedRaidState.sessionStatus,
+                bossStatus: {
+                    phase: sharedRaidState.currentPhase,
+                    phaseName: pCfg.fullName,
+                    remainingHp: sharedRaidState.phaseHp,
+                    maxHp: pCfg.maxHp
+                },
+                totalPlayers: players.length,
+                totalRaidDamage: totalDmg,
+                rankings: players.map((p, idx) => ({
+                    rank: idx + 1,
+                    name: p.name || '少俠',
+                    totalDamageToBoss: p.totalDamage || 0,
+                    solvedQuestionsCount: p.solvedCount || 0,
+                    maxHp: p.maxHp || 600,
+                    atk: p.atk || 75,
+                    def: p.def || 45,
+                    status: p.statusText || '待機中'
+                }))
+            };
+            const dataStr = JSON.stringify(payload, null, 2);
+            const blob = new Blob([dataStr], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `公民山海經_異世界機械山海王_傷害排名榜.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         }
 
         function controllerResetRaid() {
             sharedRaidState.currentPhase = 1;
-            sharedRaidState.phaseMaxHp = MECHA_PHASES[1].maxHp;
-            sharedRaidState.phaseHp = MECHA_PHASES[1].maxHp;
+            const p1 = getScaledMechaPhase(1);
+            sharedRaidState.phaseMaxHp = p1.maxHp;
+            sharedRaidState.phaseHp = p1.maxHp;
             Object.keys(sharedRaidState.players).forEach(k => {
                 sharedRaidState.players[k].totalDamage = 0;
             });
@@ -2180,9 +2749,9 @@
         }
 
         function controllerForceBossPhase(phaseNum) {
-            const pCfg = MECHA_PHASES[phaseNum];
-            if (!pCfg) return;
+            if (!MECHA_PHASES[phaseNum]) return;
             sharedRaidState.currentPhase = phaseNum;
+            const pCfg = getScaledMechaPhase(phaseNum);
             sharedRaidState.phaseMaxHp = pCfg.maxHp;
             sharedRaidState.phaseHp = pCfg.maxHp;
             sendSyncMessage({
@@ -2325,20 +2894,53 @@
         }
 
         function renderControllerDashboard() {
-            const pCfg = MECHA_PHASES[sharedRaidState.currentPhase] || MECHA_PHASES[1];
-            const isActive = sharedRaidState.sessionStatus === 'active';
+            const pCfg = getScaledMechaPhase(sharedRaidState.currentPhase);
+            const st = sharedRaidState.sessionStatus;
+            const bMult = Number(sharedRaidState.bossPowerMultiplier) || 1;
+            const sMult = getShigongManualMultiplier();
+
+            const bMultBadge = document.getElementById('ctrl-boss-mult-badge');
+            if (bMultBadge) bMultBadge.textContent = bMult === 1 ? '目前：原版 1 倍' : `目前：提升 ${bMult} 倍`;
+            [1, 2, 5, 10, 50].forEach(m => {
+                const btn = document.getElementById(`btn-bmult-${m}`);
+                if (!btn) return;
+                btn.className = (m === bMult)
+                    ? 'py-2 rounded-lg font-black border transition bg-rose-600 text-white border-rose-300 shadow scale-105'
+                    : 'py-2 rounded-lg font-black border transition bg-slate-900 text-slate-300 border-slate-700 hover:border-rose-400';
+            });
+
+            const sMultBadge = document.getElementById('ctrl-shigong-mult-badge');
+            if (sMultBadge) sMultBadge.textContent = `目前：原版 ${sMult} 倍升幅`;
+            [2, 5, 7].forEach(m => {
+                const btn = document.getElementById(`btn-smult-${m}`);
+                if (!btn) return;
+                btn.className = (m === sMult)
+                    ? 'py-2 rounded-lg font-black border transition bg-emerald-600 text-white border-emerald-300 shadow scale-105'
+                    : 'py-2 rounded-lg font-black border transition bg-slate-900 text-slate-300 border-slate-700 hover:border-emerald-400';
+            });
 
             const badgeEl = document.getElementById('ctrl-status-badge');
             if (badgeEl) {
-                badgeEl.className = isActive
-                    ? 'text-xs font-bold px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/50'
-                    : 'text-xs font-bold px-2.5 py-0.5 rounded bg-rose-500/30 text-rose-200 border border-rose-400/50';
-                badgeEl.textContent = isActive ? '🟢 限時遊戲進行中' : '🔴 遊戲已結束（玩家端已鎖定）';
+                if (st === 'active') {
+                    badgeEl.className = 'text-xs font-bold px-2.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-400/50';
+                    badgeEl.textContent = '🟢 限時遊戲進行中（已開放玩家進入兩大遊戲）';
+                } else if (st === 'ended') {
+                    badgeEl.className = 'text-xs font-bold px-2.5 py-0.5 rounded bg-rose-500/30 text-rose-200 border border-rose-400/50';
+                    badgeEl.textContent = '🔴 已強制結束遊戲（所有玩家退回待機版面及結算排名）';
+                } else {
+                    badgeEl.className = 'text-xs font-bold px-2.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/50';
+                    badgeEl.textContent = '⏳ 尚未開始遊戲（所有玩家版處於待機狀態）';
+                }
             }
 
             document.getElementById('ctrl-boss-phase-badge').textContent = pCfg.fullName;
             document.getElementById('ctrl-boss-beasts-badge').textContent = `全20種奇禽異獸（全部${pCfg.beastTier}階）`;
             document.getElementById('ctrl-boss-subtitle').textContent = `（${pCfg.scheduleDesc}）`;
+            const ctrlBossImg = document.getElementById('ctrl-boss-img');
+            if (ctrlBossImg && pCfg.imgUrl && ctrlBossImg.src !== pCfg.imgUrl) {
+                ctrlBossImg.style.display = 'block';
+                ctrlBossImg.src = pCfg.imgUrl;
+            }
 
             const hpPct = Math.max(0, Math.min(100, (sharedRaidState.phaseHp / pCfg.maxHp) * 100));
             document.getElementById('ctrl-boss-hp-text').textContent =
@@ -2402,9 +3004,12 @@
                 if (sharedRaidState.sessionStatus === 'active') {
                     pill.className = 'text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
                     pill.innerHTML = `<i class="fa-solid fa-signal mr-1"></i>戰場開放中 (狀態${sharedRaidState.currentPhase})`;
-                } else {
+                } else if (sharedRaidState.sessionStatus === 'ended') {
                     pill.className = 'text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-rose-500/30 text-rose-200 border border-rose-500/50';
-                    pill.innerHTML = `<i class="fa-solid fa-lock mr-1"></i>控制版已結束遊戲`;
+                    pill.innerHTML = `<i class="fa-solid fa-flag-checkered mr-1"></i>控制版已結束遊戲 · 待機與排名結算`;
+                } else {
+                    pill.className = 'text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40';
+                    pill.innerHTML = `<i class="fa-solid fa-hourglass-half mr-1"></i>待機中 (等待控制版開始)`;
                 }
             }
             if (currentAppRole === 'controller' && controllerAuthenticated) {
@@ -2425,16 +3030,94 @@
             }
         }
 
+        function enterPlayerStandbyHub() {
+            if (sharedRaidState.sessionStatus !== 'active') {
+                showDialog(
+                    '目前處於待機畫面',
+                    '由於「控制版」尚未開始或已結束遊戲，所有「玩家版」必須留在待機畫面等候，不能進入遊戲畫面！你可直接在此待機畫面匯入或匯出進度。',
+                    'fa-hourglass-half text-amber-400'
+                );
+                return;
+            }
+            document.getElementById('screen-player-locked').classList.add('hidden');
+            mechaMeta.introDone = true;
+            showScreen('screen-hub');
+            renderHub();
+        }
+
+        function updateStandbyScreenUI() {
+            const st = sharedRaidState.sessionStatus;
+            const cardEl = document.getElementById('player-locked-card');
+            const iconWrap = document.getElementById('locked-icon-wrap');
+            const iconEl = document.getElementById('locked-screen-icon');
+            const badgeEl = document.getElementById('locked-screen-badge');
+            const titleEl = document.getElementById('locked-screen-title');
+            const descEl = document.getElementById('locked-screen-desc');
+            const connEl = document.getElementById('standby-conn-status');
+            const summaryEl = document.getElementById('standby-player-summary');
+
+            const eff = getEffectivePlayerStats();
+            if (summaryEl) {
+                summaryEl.textContent = `${gameState.player.name || '少俠'} ｜ HP ${eff.maxHp.toLocaleString()} / 攻 ${eff.atk.toLocaleString()} / 防 ${eff.def.toLocaleString()} ｜ 累計對Boss總傷害：${(mechaMeta.totalBossDamage || 0).toLocaleString()}`;
+            }
+
+            if (st === 'ended') {
+                if (cardEl) cardEl.className = 'max-w-4xl mx-auto mecha-card rounded-2xl p-6 sm:p-8 border-2 border-rose-500/70 text-center space-y-5';
+                if (iconWrap) iconWrap.className = 'w-16 h-16 rounded-2xl bg-rose-500/20 border-2 border-rose-400 flex items-center justify-center mx-auto text-rose-300 text-3xl';
+                if (iconEl) iconEl.className = 'fa-solid fa-flag-checkered';
+                if (badgeEl) {
+                    badgeEl.className = 'text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40';
+                    badgeEl.textContent = '玩家待機版面 · 控制版已強制結束遊玩';
+                }
+                if (titleEl) titleEl.textContent = '控制版已結束遊戲 · 全體玩家退回待機版面';
+                if (descEl) descEl.textContent = '「控制版」已強制結束所有「玩家版」遊玩「齊打異世界機械山海王」與「與師公修行備戰」。以下即時顯示全體玩家的總傷害排名（以傷害「異世界機械山海王」的 HP 總數排序，並可下載排名資料），請於下方匯出你的遊戲進度！';
+                if (connEl) connEl.innerHTML = '<i class="fa-solid fa-flag-checkered mr-1"></i>本場遊戲已結束 · 請匯出遊戲進度';
+            } else {
+                if (cardEl) cardEl.className = 'max-w-4xl mx-auto mecha-card rounded-2xl p-6 sm:p-8 border-2 border-amber-500/70 text-center space-y-5';
+                if (iconWrap) iconWrap.className = 'w-16 h-16 rounded-2xl bg-amber-500/20 border-2 border-amber-400 flex items-center justify-center mx-auto text-amber-300 text-3xl';
+                if (iconEl) iconEl.className = 'fa-solid fa-hourglass-half';
+                if (badgeEl) {
+                    badgeEl.className = 'text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40';
+                    badgeEl.textContent = '玩家待機畫面 · 等待「控制版」開始遊戲';
+                }
+                if (titleEl) titleEl.textContent = '「控制版」尚未開始遊戲 · 玩家待機中';
+                if (descEl) descEl.textContent = '本遊戲由「控制版」控制所有「玩家版」能否進入遊戲開始。由於「控制版」尚未開始遊戲，「玩家版」目前只可在此待機畫面等候，不能進入遊戲「齊打異世界機械山海王」和「與師公修行備戰」。當「控制版」按下「開始遊戲」後，此畫面將自動解鎖進入遊戲！';
+                if (connEl) connEl.innerHTML = '<i class="fa-solid fa-lock mr-1"></i>待機鎖定中（等待控制版開始遊戲）';
+            }
+
+            const players = getSortedPlayersLeaderboard();
+            const lbEl = document.getElementById('player-locked-leaderboard');
+            if (lbEl) lbEl.innerHTML = buildLeaderboardHtml(players);
+        }
+
         function enforceSessionGateOnPlayer() {
             if (currentAppRole !== 'player') return;
-            if (sharedRaidState.sessionStatus === 'ended') {
+            const st = sharedRaidState.sessionStatus;
+
+            // 只要「控制版」未開始 ('waiting') 或已強制結束 ('ended')，所有「玩家版」一律強制停留在待機畫面 (#screen-player-locked)！
+            if (st !== 'active') {
+                if (battleState) {
+                    battleState = null;
+                    const eff = getEffectivePlayerStats();
+                    gameState.player.hp = eff.maxHp;
+                    gameState.player.mp = eff.maxMp;
+                    saveToDevice(false);
+                }
+                document.getElementById('modal-reward').classList.add('hidden');
+                document.getElementById('modal-equip-choice').classList.add('hidden');
+
                 ['screen-welcome', 'screen-quiz', 'screen-hub', 'screen-battle'].forEach(id => {
                     document.getElementById(id).classList.add('hidden');
                 });
                 document.getElementById('screen-player-locked').classList.remove('hidden');
-                const players = getSortedPlayersLeaderboard();
-                document.getElementById('player-locked-leaderboard').innerHTML = buildLeaderboardHtml(players);
+
+                const headerBar = document.getElementById('header-player-bar');
+                headerBar.classList.remove('hidden');
+                headerBar.classList.add('flex');
+                updateTopHeaderBar();
+                updateStandbyScreenUI();
             } else {
+                // st === 'active' (控制版已開始遊戲，解除待機畫面並進入遊戲)
                 if (!document.getElementById('screen-player-locked').classList.contains('hidden')) {
                     document.getElementById('screen-player-locked').classList.add('hidden');
                     if (mechaMeta.introDone) {
@@ -2443,6 +3126,8 @@
                     } else {
                         showScreen('screen-welcome');
                     }
+                } else if (!document.getElementById('screen-hub').classList.contains('hidden')) {
+                    updateHubBossStatusUI();
                 }
             }
         }
@@ -2451,6 +3136,18 @@
          * 7. 初始化與本機儲存管理
          *************************************************************************/
         window.onload = function () {
+            try {
+                const savedLocal = localStorage.getItem(STORAGE_KEY);
+                if (savedLocal) {
+                    const parsedLocal = JSON.parse(savedLocal);
+                    if (parsedLocal && parsedLocal.gameState) {
+                        mergeAndNormalizeSaveData(parsedLocal.gameState);
+                        if (parsedLocal.mechaMeta) {
+                            mechaMeta = { ...mechaMeta, ...parsedLocal.mechaMeta };
+                        }
+                    }
+                }
+            } catch (e) {}
             try {
                 const savedRaid = localStorage.getItem(SHARED_RAID_KEY);
                 if (savedRaid) {
@@ -2462,7 +3159,9 @@
             } catch (e) {}
             populateSubtopicSelectors();
             checkExistingSaveOnWelcome();
+            connectPlayerToPeerHost();
             refreshAllRaidUI();
+            enforceSessionGateOnPlayer();
         };
 
         function populateSubtopicSelectors() {
@@ -2584,10 +3283,16 @@
         }
 
         function showScreen(screenId) {
+            if (currentAppRole === 'player' && sharedRaidState.sessionStatus !== 'active' && screenId !== 'screen-player-locked' && screenId !== 'screen-controller') {
+                screenId = 'screen-player-locked';
+            }
             ['screen-welcome', 'screen-quiz', 'screen-hub', 'screen-battle', 'screen-player-locked', 'screen-controller'].forEach(id => {
                 document.getElementById(id).classList.add('hidden');
             });
             document.getElementById(screenId).classList.remove('hidden');
+            if (screenId === 'screen-player-locked') {
+                updateStandbyScreenUI();
+            }
 
             const headerBar = document.getElementById('header-player-bar');
             if (screenId === 'screen-welcome' || screenId === 'screen-controller') {
@@ -2645,14 +3350,27 @@
         }
 
         function startShigongTraining(topicNum = 0) {
+            if (sharedRaidState.sessionStatus !== 'active') {
+                if (sharedRaidState.sessionStatus === 'ended') {
+                    enforceSessionGateOnPlayer();
+                } else {
+                    showDialog(
+                        '玩家待機中 · 尚未開放進入',
+                        '「控制版」尚未開始遊戲！目前「玩家版」只可待機（可檢視能力、隨身背包、溫習題庫或匯出進度），不能進入「齊打異世界機械山海王」和「與師公修行備戰」。請等待控制版開始遊戲！',
+                        'fa-hourglass-half text-amber-400'
+                    );
+                }
+                return;
+            }
             currentQuizState.mode = 'shigong';
             currentQuizState.topicFilter = topicNum;
             showScreen('screen-quiz');
             document.getElementById('intro-stepper').classList.add('hidden');
             document.getElementById('btn-unlock-hub-early').classList.add('hidden');
             document.getElementById('btn-exit-training').classList.remove('hidden');
+            const sMult = getShigongManualMultiplier();
             document.getElementById('quiz-mode-badge').textContent = '與師公修行備戰（導學案 01～03）';
-            document.getElementById('quiz-reward-rule-badge').textContent = '每答對 1 題連選 2 個秘笈（原版 2 倍升幅）';
+            document.getElementById('quiz-reward-rule-badge').textContent = `每答對 1 題連選 2 個秘笈（原版 ${sMult} 倍升幅）`;
             updateForcedShigongUI();
             loadNextQuizQuestion();
         }
@@ -2851,12 +3569,13 @@
                 enterAfter5Btn.classList.add('hidden');
             }
 
+            const activeQuizMult = currentQuizState.mode === 'shigong' ? getShigongManualMultiplier() : 2;
             if (isCorrect) {
                 feedbackBox.className = 'rounded-xl p-4 mb-2 border bg-emerald-950/60 border-emerald-500/60';
                 feedbackTitle.className = 'font-bold text-base text-emerald-300';
-                feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-check mr-1.5"></i>回答正確！可選取 ${rewardCount} 項秘笈（原版 2 倍升幅）或吞噬山海異獸！`;
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-check mr-1.5"></i>回答正確！可選取 ${rewardCount} 項秘笈（原版 ${activeQuizMult} 倍升幅）或吞噬山海異獸！`;
                 feedbackDesc.textContent = `【解析】${q.explanation}`;
-                nextBtn.innerHTML = `<i class="fa-solid fa-gift mr-1"></i>領取 ${rewardCount} 項秘笈 / 異獸 (2倍升幅)`;
+                nextBtn.innerHTML = `<i class="fa-solid fa-gift mr-1"></i>領取 ${rewardCount} 項秘笈 / 異獸 (${activeQuizMult}倍升幅)`;
             } else {
                 feedbackBox.className = 'rounded-xl p-4 mb-2 border bg-red-950/60 border-red-500/60';
                 feedbackTitle.className = 'font-bold text-base text-red-300';
@@ -2869,7 +3588,8 @@
         function handleQuizNextStep() {
             if (currentQuizState.lastCorrect) {
                 const picksCount = currentQuizState.mode === 'shigong' ? 2 : 1;
-                openRewardModal(picksCount, 2, () => {
+                const activeQuizMult = currentQuizState.mode === 'shigong' ? getShigongManualMultiplier() : 2;
+                openRewardModal(picksCount, activeQuizMult, () => {
                     loadNextQuizQuestion();
                 });
             } else {
@@ -2906,9 +3626,7 @@
                     : `請選擇一項秘笈（${mult}倍升幅）或吞噬《山海經》奇禽異獸`;
 
             document.getElementById('reward-modal-subtitle').textContent =
-                mult === 5
-                    ? '🔥 戰勝「異世界機械山海王」專屬獎勵：基礎戰鬥能力升幅為《香江風雲錄》原版的 5 倍！'
-                    : '基礎戰鬥能力（HP、MP、閃避、攻、防、必殺技）升幅為《香江風雲錄》原版的 2 倍！';
+                `🔥 基礎戰鬥能力（生命值、內力值、閃避速度、攻擊力、防禦力、必殺技）升幅為《香江風雲錄》原版的 ${mult} 倍！（吞噬《山海經》奇禽異獸固定提升 1 階特殊能力）`;
 
             const container = document.getElementById('reward-cards-container');
             container.innerHTML = '';
@@ -3019,11 +3737,91 @@
         }
 
         function updateHubBossStatusUI() {
-            const pCfg = MECHA_PHASES[sharedRaidState.currentPhase] || MECHA_PHASES[1];
+            const pCfg = getScaledMechaPhase(sharedRaidState.currentPhase);
+            const bMult = pCfg.powerMult;
+            const sMult = getShigongManualMultiplier();
             const hpPct = Math.max(0, Math.min(100, (sharedRaidState.phaseHp / pCfg.maxHp) * 100));
+
+            // Update Shigong Multiplier badges in Hub
+            const sTopBadge = document.getElementById('hub-shigong-top-badge');
+            if (sTopBadge) sTopBadge.innerHTML = `<i class="fa-solid fa-angles-up mr-1"></i>答對連選 2 秘笈(${sMult}倍升幅)`;
+            const sRuleText = document.getElementById('hub-shigong-rule-text');
+            if (sRuleText) sRuleText.textContent = `每答對 1 題連選 2 個秘笈 (原版 ${sMult} 倍升幅)`;
+
+            // Update the 3 Phase Breakdown cards with scaled numbers
+            const p1 = getScaledMechaPhase(1);
+            const p2 = getScaledMechaPhase(2);
+            const p3 = getScaledMechaPhase(3);
+            const multTag = bMult > 1 ? ` · 強度${bMult}倍` : '';
+            const t1El = document.getElementById('pcard-1-title');
+            if (t1El) t1El.textContent = `狀態一：正常模式（HP ${p1.maxHp.toLocaleString()}${multTag}）`;
+            const d1El = document.getElementById('pcard-1-desc');
+            if (d1El) d1El.textContent = `攻 ${p1.atk.toLocaleString()} / 防 ${p1.def.toLocaleString()} / 閃避 ${p1.eva}% / 必殺 ${p1.ultMult}%。每 2 回合使用「相柳·九首劇毒」。`;
+
+            const t2El = document.getElementById('pcard-2-title');
+            if (t2El) t2El.textContent = `狀態二：老羞成怒模式（HP ${p2.maxHp.toLocaleString()}${multTag}）`;
+            const d2El = document.getElementById('pcard-2-desc');
+            if (d2El) d2El.textContent = `攻 ${p2.atk.toLocaleString()} / 防 ${p2.def.toLocaleString()} / 閃避 ${p2.eva}%。每 2 回合用「相柳·九首劇毒」、每 5 回合優先用「雷神·雷澤震擊·昏迷」；HP≦${p2.lowHpThreshold.toLocaleString()} 時觸發 45% 低血量暴擊！`;
+
+            const t3El = document.getElementById('pcard-3-title');
+            if (t3El) t3El.textContent = `狀態三：破防模式（HP ${p3.maxHp.toLocaleString()}${multTag}）`;
+            const d3El = document.getElementById('pcard-3-desc');
+            if (d3El) d3El.textContent = `攻 ${p3.atk.toLocaleString()} / 防 ${p3.def.toLocaleString()} / 閃避 ${p3.eva}%。每 2 回合用「相柳·九首劇毒」、每 5 回合優先用「猙·五尾威壓」；HP≦${p3.lowHpThreshold.toLocaleString()} 時觸發 55% 低血量暴擊！`;
+            const st = sharedRaidState.sessionStatus;
+
+            // Update Standby Banner & Lock/Unlock Game Entry Buttons
+            const standbyBanner = document.getElementById('hub-standby-banner');
+            const raidBtn = document.getElementById('btn-enter-mecha-raid');
+            const shigongMainBtn = document.getElementById('btn-enter-shigong-main');
+            const shigongSubBtns = document.querySelectorAll('.shigong-entry-btn');
+
+            if (st === 'active') {
+                if (standbyBanner) standbyBanner.classList.add('hidden');
+                if (raidBtn) {
+                    raidBtn.className = 'w-full btn-cyber py-3.5 rounded-xl font-black text-sm sm:text-base flex items-center justify-center gap-2 shadow-xl';
+                    raidBtn.innerHTML = `<i class="fa-solid fa-swords"></i> 進入異世界 · 齊打機械山海王（接續當前階段與血量）`;
+                }
+                if (shigongMainBtn) {
+                    shigongMainBtn.className = 'w-full btn-jade py-3.5 rounded-xl font-black text-sm flex items-center justify-center gap-2 shadow-lg';
+                    shigongMainBtn.innerHTML = `<i class="fa-solid fa-graduation-cap"></i> 立即進入「與師公修行備戰」(連選2個${sMult}倍秘笈)`;
+                }
+                shigongSubBtns.forEach(b => b.classList.remove('opacity-50', 'cursor-not-allowed'));
+            } else {
+                if (standbyBanner) {
+                    standbyBanner.classList.remove('hidden');
+                    const pillEl = document.getElementById('hub-standby-pill');
+                    const titleEl = document.getElementById('hub-standby-title');
+                    const descEl = document.getElementById('hub-standby-desc');
+                    if (st === 'ended') {
+                        pillEl.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-rose-500 text-white';
+                        pillEl.textContent = '控制版已結束遊戲 · 待機與匯出進度';
+                        titleEl.textContent = '「控制版」已強制結束本場遊戲 —— 玩家已退回待機版面';
+                        descEl.textContent = '本場「齊打異世界機械山海王」與「與師公修行備戰」已結束！你可點擊右側「檢視排名榜與下載」查看全場總傷害排名，或點擊「匯出遊戲進度」將角色能力與神裝帶回《香江風雲錄》！';
+                    } else {
+                        pillEl.className = 'text-xs font-black px-2.5 py-0.5 rounded-full bg-amber-500 text-slate-950';
+                        pillEl.textContent = '玩家待機模式 · 等待控制版開始';
+                        titleEl.textContent = '「控制版」尚未開始遊戲 —— 目前只可待機，不能進入兩大遊戲';
+                        descEl.textContent = '當「控制版」未開始遊戲時，「玩家版」只可於此待機版面檢視能力、管理隨身背包、溫習題目或匯出進度，不能進入「齊打異世界機械山海王」和「與師公修行備戰」。請等待控制版開始遊戲！';
+                    }
+                }
+                if (raidBtn) {
+                    raidBtn.className = 'w-full bg-slate-800 text-slate-400 border border-slate-700 py-3.5 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 cursor-not-allowed opacity-75';
+                    raidBtn.innerHTML = `<i class="fa-solid fa-lock text-amber-400"></i> 待機中：等待「控制版」開始遊戲後方可進入「齊打異世界機械山海王」`;
+                }
+                if (shigongMainBtn) {
+                    shigongMainBtn.className = 'w-full bg-slate-800 text-slate-400 border border-slate-700 py-3.5 rounded-xl font-black text-xs sm:text-sm flex items-center justify-center gap-2 cursor-not-allowed opacity-75';
+                    shigongMainBtn.innerHTML = `<i class="fa-solid fa-lock text-amber-400"></i> 待機中：等待「控制版」開始遊戲後方可進入「與師公修行備戰」`;
+                }
+                shigongSubBtns.forEach(b => b.classList.add('opacity-50', 'cursor-not-allowed'));
+            }
 
             document.getElementById('hub-boss-phase-title').textContent = `當前全服進度：${pCfg.fullName}`;
             document.getElementById('hub-boss-phase-pill').textContent = `狀態 ${pCfg.phase}：${pCfg.name} (全異獸${pCfg.beastTier}階)`;
+            const hubBossImg = document.getElementById('hub-boss-img');
+            if (hubBossImg && pCfg.imgUrl && hubBossImg.src !== pCfg.imgUrl) {
+                hubBossImg.style.display = 'block';
+                hubBossImg.src = pCfg.imgUrl;
+            }
             document.getElementById('hub-boss-hp-numbers').textContent = `${sharedRaidState.phaseHp.toLocaleString()} / ${pCfg.maxHp.toLocaleString()} HP`;
             document.getElementById('hub-boss-hp-bar').style.width = `${hpPct}%`;
 
@@ -3036,11 +3834,11 @@
                 const el = document.getElementById(`phase-card-${num}`);
                 if (!el) return;
                 if (num === sharedRaidState.currentPhase) {
-                    el.className = 'p-2.5 rounded-xl bg-rose-950/50 border-2 border-rose-400 shadow';
+                    el.className = 'p-2.5 rounded-xl bg-rose-950/50 border-2 border-rose-400 shadow flex items-center gap-3';
                 } else if (num < sharedRaidState.currentPhase) {
-                    el.className = 'p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 opacity-75';
+                    el.className = 'p-2.5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 opacity-75 flex items-center gap-3';
                 } else {
-                    el.className = 'p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 opacity-75';
+                    el.className = 'p-2.5 rounded-xl bg-slate-900/60 border border-slate-800 opacity-75 flex items-center gap-3';
                 }
             });
         }
@@ -3355,8 +4153,16 @@
         let battleState = null;
 
         function startMechaBossBattle() {
-            if (sharedRaidState.sessionStatus === 'ended') {
-                enforceSessionGateOnPlayer();
+            if (sharedRaidState.sessionStatus !== 'active') {
+                if (sharedRaidState.sessionStatus === 'ended') {
+                    enforceSessionGateOnPlayer();
+                } else {
+                    showDialog(
+                        '玩家待機中 · 尚未開放進入',
+                        '「控制版」尚未開始遊戲！目前「玩家版」只可待機（可檢視能力、隨身背包、溫習題庫或匯出進度），不能進入「齊打異世界機械山海王」和「與師公修行備戰」。請等待控制版開始遊戲！',
+                        'fa-hourglass-half text-amber-400'
+                    );
+                }
                 return;
             }
             if (mechaMeta.forcedShigongQuestionsLeft > 0) {
@@ -3373,11 +4179,12 @@
 
             if (sharedRaidState.phaseHp <= 0) {
                 sharedRaidState.currentPhase = 1;
-                sharedRaidState.phaseMaxHp = MECHA_PHASES[1].maxHp;
-                sharedRaidState.phaseHp = MECHA_PHASES[1].maxHp;
+                const p1 = getScaledMechaPhase(1);
+                sharedRaidState.phaseMaxHp = p1.maxHp;
+                sharedRaidState.phaseHp = p1.maxHp;
             }
 
-            const pCfg = MECHA_PHASES[sharedRaidState.currentPhase] || MECHA_PHASES[1];
+            const pCfg = getScaledMechaPhase(sharedRaidState.currentPhase);
             const p = gameState.player;
             const eff = getEffectivePlayerStats();
 
@@ -3449,20 +4256,21 @@
 
         function syncBattleBossWithSharedState() {
             if (!battleState) return;
-            const pCfg = MECHA_PHASES[sharedRaidState.currentPhase] || MECHA_PHASES[1];
+            const pCfg = getScaledMechaPhase(sharedRaidState.currentPhase);
             const bb = battleState.boss;
-            if (bb.phase !== pCfg.phase) {
-                bb.phase = pCfg.phase;
-                bb.name = `異世界機械山海王（${pCfg.name}）`;
-                bb.maxHp = pCfg.maxHp;
-                bb.atk = pCfg.atk;
-                bb.def = pCfg.def;
-                bb.eva = pCfg.eva;
-                bb.ultMult = pCfg.ultMult;
-                bb.beastTier = pCfg.beastTier;
-                bb.lowHpThreshold = pCfg.lowHpThreshold;
-                bb.lowHpCritChance = pCfg.lowHpCritChance;
-                bb.scheduleDesc = pCfg.scheduleDesc;
+            const phaseChanged = bb.phase !== pCfg.phase;
+            bb.phase = pCfg.phase;
+            bb.name = `異世界機械山海王（${pCfg.name}${pCfg.powerMult > 1 ? `·${pCfg.powerMult}倍強度` : ''}）`;
+            bb.maxHp = pCfg.maxHp;
+            bb.atk = pCfg.atk;
+            bb.def = pCfg.def;
+            bb.eva = pCfg.eva;
+            bb.ultMult = pCfg.ultMult;
+            bb.beastTier = pCfg.beastTier;
+            bb.lowHpThreshold = pCfg.lowHpThreshold;
+            bb.lowHpCritChance = pCfg.lowHpCritChance;
+            bb.scheduleDesc = pCfg.scheduleDesc;
+            if (phaseChanged) {
                 appendBattleLog(`🔥 【全服階段推進】機械山海王切換至 ${pCfg.fullName}（HP ${pCfg.maxHp.toLocaleString()} / 攻 ${pCfg.atk.toLocaleString()} / 防 ${pCfg.def.toLocaleString()} / 全異獸 ${pCfg.beastTier} 階）！`, 'text-rose-400 font-bold');
             }
             bb.hp = sharedRaidState.phaseHp;
@@ -3552,6 +4360,12 @@
 
             document.getElementById('battle-boss-phase-tag').textContent = `狀態 ${bb.phase}/3 · ${MECHA_PHASES[bb.phase].name} (全異獸${bb.beastTier}階)`;
             document.getElementById('battle-boss-name').textContent = bb.name;
+            const battleBossImg = document.getElementById('battle-boss-img');
+            const phaseArtUrl = MECHA_PHASES[bb.phase]?.imgUrl || CHARACTER_ART.mechaBossP1;
+            if (battleBossImg && battleBossImg.src !== phaseArtUrl) {
+                battleBossImg.style.display = 'block';
+                battleBossImg.src = phaseArtUrl;
+            }
             document.getElementById('battle-b-atk').textContent = bCur.curAtk.toLocaleString();
             document.getElementById('battle-b-def').textContent = bCur.curDef.toLocaleString();
             document.getElementById('battle-b-eva').textContent = `${bCur.curEva}%`;
@@ -4343,14 +5157,14 @@
         }
 
         /*************************************************************************
-         * 12. 匯入與匯出系統 (100% 雙向相容《公民山海經：香江風雲錄》原版)
+         * 12. 匯入與匯出系統 (與《香江風雲錄》及《天宮修練版01》100% 雙向共通進度代碼與檔案)
          *************************************************************************/
         function openSaveModal() {
             saveToDevice(false);
             const cleanExport = buildCleanExportSaveForOriginal();
-            const jsonStr = JSON.stringify(cleanExport);
-            const base64Code = btoa(unescape(encodeURIComponent(jsonStr)));
-            document.getElementById('export-code-box').value = base64Code;
+            const encoded = btoa(encodeURIComponent(JSON.stringify(cleanExport)));
+            const box = document.getElementById('export-code-box');
+            if (box) box.value = encoded;
             document.getElementById('modal-save').classList.remove('hidden');
         }
 
@@ -4358,35 +5172,41 @@
             document.getElementById('modal-save').classList.add('hidden');
         }
 
+        // 產生乾淨且 100% 符合《香江風雲錄》與《天宮修練版01》規格的匯出物件
         function buildCleanExportSaveForOriginal() {
-            const eff = getEffectivePlayerStats();
-            const clone = JSON.parse(JSON.stringify(gameState));
-
-            clone.updatedAt = new Date().toISOString();
-            clone.player.hp = eff.maxHp;
-            clone.player.mp = eff.maxMp;
-
+            syncEquippedItemsToBackpack();
+            gameState.updatedAt = new Date().toISOString();
             const { originalStage } = getPlayerGrowthStage();
             const milestone = Math.floor(originalStage / 5) * 5;
-            clone.ambush ||= { lastResolved: 10, pending: null, rewardPending: false, history: [] };
-            clone.ambush.lastResolved = Math.max(clone.ambush.lastResolved || 10, milestone - 5);
+            if (gameState.ambush && typeof gameState.ambush === 'object') {
+                gameState.ambush.lastResolved = Math.max(gameState.ambush.lastResolved || 10, milestone - 5);
+            }
+            // 同步當前 HP/MP 至上限（與天宮修練版及原版格式完全一致）
+            gameState.player.hp = gameState.player.maxHp;
+            gameState.player.mp = gameState.player.maxMp;
 
             // 過濾掉任何非原版題號（MK1-xxx / TG1-xxx），確保原版題庫統計乾淨無誤
-            if (clone.progress && Array.isArray(clone.progress.solvedQuestionIds)) {
-                clone.progress.solvedQuestionIds = clone.progress.solvedQuestionIds.filter(
-                    id => !String(id).startsWith('MK') && !String(id).startsWith('TG')
-                );
-            }
+            const cleanOriginalSolvedIds = (gameState.progress?.solvedQuestionIds || []).filter(
+                id => typeof id === 'string' && !id.startsWith('MK') && !id.startsWith('TG')
+            );
 
-            clone.customExtensions ||= {};
-            clone.customExtensions.mechaShanhaiRaid = {
-                lastSyncedAt: new Date().toISOString(),
-                solvedCount: mechaMeta.solvedIds.length,
-                totalBossDamage: mechaMeta.totalBossDamage || 0,
-                bossPhaseClears: mechaMeta.bossPhaseClears || 0
+            return {
+                ...gameState,
+                progress: {
+                    ...gameState.progress,
+                    introCompleted: true,
+                    solvedQuestionIds: cleanOriginalSolvedIds
+                },
+                customExtensions: {
+                    ...(gameState.customExtensions || {}),
+                    mechaShanhaiRaid: {
+                        lastSyncedAt: new Date().toISOString(),
+                        solvedCount: mechaMeta.solvedIds.length,
+                        totalBossDamage: mechaMeta.totalBossDamage || 0,
+                        bossPhaseClears: mechaMeta.bossPhaseClears || 0
+                    }
+                }
             };
-
-            return clone;
         }
 
         function exportSaveFile() {
@@ -4407,16 +5227,27 @@
 
         function copySaveCode() {
             const cleanExport = buildCleanExportSaveForOriginal();
-            const jsonStr = JSON.stringify(cleanExport);
-            const base64Code = btoa(unescape(encodeURIComponent(jsonStr)));
+            // 採用與《公民山海經：香江風雲錄》及《天宮修練版01》完全相同的編碼方式：btoa(encodeURIComponent(JSON.stringify(...)))
+            const encoded = btoa(encodeURIComponent(JSON.stringify(cleanExport)));
             const box = document.getElementById('export-code-box');
-            box.value = base64Code;
-            box.select();
-            navigator.clipboard.writeText(base64Code).then(() => {
-                showDialog('進度代碼已複製！', '請回到《公民山海經：香江風雲錄》原版遊戲，貼上此進度代碼即可繼承所有強化後的能力、奇禽異獸與 5倍攻/10倍防神裝！', 'fa-clipboard-check text-emerald-400');
-            }).catch(() => {
-                showDialog('請手動複製', '已為你選取進度代碼，請按 Ctrl+C / Cmd+C 複製。', 'fa-copy text-amber-400');
-            });
+            if (box) box.value = encoded;
+
+            const tempInput = document.createElement('textarea');
+            tempInput.value = encoded;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            try { document.execCommand('copy'); } catch (e) {}
+            document.body.removeChild(tempInput);
+
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(encoded).catch(() => {});
+            }
+
+            showDialog(
+                '回流原版進度代碼已複製！',
+                `已成功複製進度代碼字串至剪貼簿！\n\n現在你可以回到《公民山海經：香江風雲錄》或《天宮修練版01》，打開「進度/存檔」視窗並直接貼上此代碼，即可完美繼承你在本遊戲獲得的戰鬥能力、異獸階級與 5倍攻擊/10倍防禦神裝！`,
+                'fa-copy text-amber-400'
+            );
         }
 
         function handleWelcomeFileImport(event) {
@@ -4438,7 +5269,7 @@
         function importFromWelcomeCode() {
             const raw = document.getElementById('welcome-import-code').value.trim();
             if (!raw) {
-                showDialog('請輸入進度代碼', '請先貼上你在《公民山海經：香江風雲錄》複製的進度代碼。', 'fa-triangle-exclamation text-amber-400');
+                showDialog('請貼上進度代碼', '請先在文字框內貼上從《公民山海經：香江風雲錄》或《天宮修練版01》複製的進度代碼字串，或上傳 .json 進度檔。', 'fa-circle-info text-sky-400');
                 return;
             }
             parseAndLoadCodeString(raw, true);
@@ -4466,21 +5297,44 @@
             parseAndLoadCodeString(raw, false);
         }
 
-        function parseAndLoadCodeString(rawStr, isFromWelcome) {
+        function parseAndLoadCodeString(rawCode, isFromWelcome) {
             try {
-                let jsonText = rawStr;
-                if (!rawStr.startsWith('{')) {
-                    jsonText = decodeURIComponent(escape(atob(rawStr)));
+                let parsed;
+                const trimmed = String(rawCode || '').trim();
+                if (trimmed.startsWith('{')) {
+                    parsed = JSON.parse(trimmed);
+                } else {
+                    const cleanB64 = trimmed.replace(/\s+/g, '');
+                    const decodedB64 = atob(cleanB64);
+                    try {
+                        // 標準格式（與《香江風雲錄》及《天宮修練版01》100% 共通）：btoa(encodeURIComponent(JSON.stringify(...)))
+                        parsed = JSON.parse(decodeURIComponent(decodedB64));
+                    } catch (innerErr) {
+                        // 相容舊版 unescape(encodeURIComponent(...)) 格式
+                        parsed = JSON.parse(decodeURIComponent(escape(decodedB64)));
+                    }
                 }
-                const parsed = JSON.parse(jsonText);
                 validateAndLoadSave(parsed, isFromWelcome);
             } catch (e) {
-                showDialog('進度碼解析失敗', '無法識別此進度代碼，請確認是否完整複製。', 'fa-circle-xmark text-red-400');
+                showDialog('讀取失敗', '進度代碼字串格式不正確，請確認從《香江風雲錄》或《天宮修練版01》完整複製。', 'fa-circle-xmark text-red-400');
+            }
+        }
+
+        function assertSaveShape(parsed) {
+            if (!parsed || typeof parsed !== 'object' || !parsed.player || typeof parsed.player !== 'object') {
+                throw new Error('存檔缺少角色資料');
+            }
+            const p = parsed.player;
+            if (!Number.isFinite(p.maxHp) || p.maxHp <= 0) throw new Error('生命值格式不正確');
+            for (const k of ['hp', 'maxMp', 'mp', 'atk', 'def', 'eva', 'ultMult']) {
+                if (k in p && (!Number.isFinite(p[k]) || p[k] < 0)) throw new Error('角色數值格式不正確');
             }
         }
 
         function mergeAndNormalizeSaveData(data) {
             const incoming = data.gameState ? data.gameState : data;
+            assertSaveShape(incoming);
+            const prevInv = Array.isArray(gameState?.player?.equipment?.inventory) ? [...gameState.player.equipment.inventory] : [];
             const def = createDefaultGameState(incoming.player?.name || '少俠');
 
             gameState = {
@@ -4500,13 +5354,22 @@
                 },
                 progress: {
                     ...def.progress,
-                    ...(incoming.progress || {})
+                    ...(incoming.progress || {}),
+                    introStep: {
+                        ...def.progress.introStep,
+                        ...(incoming.progress?.introStep || {})
+                    },
+                    bossDefeats: {
+                        ...def.progress.bossDefeats,
+                        ...(incoming.progress?.bossDefeats || {})
+                    }
                 },
                 multiplayerRecord: {
                     ...def.multiplayerRecord,
                     ...(incoming.multiplayerRecord || {})
                 },
                 customExtensions: {
+                    ...def.customExtensions,
                     ...(incoming.customExtensions || {})
                 }
             };
@@ -4514,6 +5377,19 @@
             Object.keys(gameState.player.beasts).forEach(k => {
                 gameState.player.beasts[k] = Math.max(0, Math.min(MAX_BEAST_LEVEL, Number(gameState.player.beasts[k]) || 0));
             });
+
+            gameState.player.equipment ||= { weapon: null, armor: null, accessory: null, inventory: [] };
+            if (!Array.isArray(gameState.player.equipment.inventory)) {
+                gameState.player.equipment.inventory = [];
+            }
+            prevInv.forEach(oldItem => {
+                if (!oldItem || !oldItem.name) return;
+                const exists = gameState.player.equipment.inventory.some(
+                    x => x && (x.id === oldItem.id || (x.series && oldItem.series && x.series === oldItem.series) || x.name === oldItem.name)
+                );
+                if (!exists) gameState.player.equipment.inventory.push({ ...oldItem });
+            });
+            syncEquippedItemsToBackpack();
 
             const eff = getEffectivePlayerStats();
             gameState.player.hp = eff.maxHp;
@@ -4528,7 +5404,15 @@
             mergeAndNormalizeSaveData(data);
             closeSaveModal();
 
-            if (isFromWelcome) {
+            if (sharedRaidState.sessionStatus !== 'active') {
+                saveToDevice(false);
+                enforceSessionGateOnPlayer();
+                showDialog(
+                    '進度載入成功（待機候命中）',
+                    `已成功載入少俠【${gameState.player.name}】的角色進度！\n\n目前「控制版」尚未開始遊戲，你正處於待機畫面；當「控制版」按下「開始遊戲」時將自動進入遊戲！`,
+                    'fa-hourglass-half text-amber-400'
+                );
+            } else if (isFromWelcome) {
                 mechaMeta.introDone = false;
                 mechaMeta.introCount = 0;
                 saveToDevice(false);
